@@ -28,6 +28,13 @@
                 <input class="input" id="phone" type="text" th:field="*{phone}" placeholder="0771234567"/>
                 <div class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
             </div>
+            <div class="field">
+                <label for="identityCardNumber">Identity card number (NIC)</label>
+                <input class="input" id="identityCardNumber" type="text" th:field="*{identityCardNumber}"
+                       placeholder="199512345678 or 123456789V" autocomplete="off"/>
+                <div class="field-error" th:if="${#fields.hasErrors('identityCardNumber')}" th:errors="*{identityCardNumber}"></div>
+                <p class="muted" style="font-size:.8rem;margin:.35rem 0 0">This cannot be changed after registration.</p>
+            </div>
             <div class="form-row">
                 <div class="field">
                     <label for="password">Password</label>

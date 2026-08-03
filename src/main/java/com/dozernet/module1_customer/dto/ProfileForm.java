@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * Form for updating a customer's own profile (name and phone). Email is the
- * login identity and is not editable here.
+ * Form for updating a customer's own profile (name and phone). Email and NIC
+ * are identity fields and are not editable here.
  */
 public class ProfileForm {
 

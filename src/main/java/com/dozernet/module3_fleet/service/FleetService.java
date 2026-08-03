@@ -13,6 +13,7 @@ import com.dozernet.module3_fleet.repository.MachineRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -36,6 +37,15 @@ public class FleetService {
     public List<Machine> search(MachineType type, String keyword) {
         String kw = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
         return machineRepository.search(type, kw);
+    }
+
+    /** Catalogue search limited to any of the given types (job-category browse). */
+    public List<Machine> searchByTypes(Collection<MachineType> types, String keyword) {
+        String kw = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        if (types == null || types.isEmpty()) {
+            return machineRepository.search(null, kw);
+        }
+        return machineRepository.searchByTypes(types, kw);
     }
 
     public List<Machine> findAll() {

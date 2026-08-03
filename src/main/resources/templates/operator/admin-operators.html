@@ -66,22 +66,28 @@
                             <div class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
                         </div>
                         <div class="field">
+                            <label for="identityCardNumber">NIC</label>
+                            <input class="input" id="identityCardNumber" type="text" th:field="*{identityCardNumber}"
+                                   placeholder="199512345678"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('identityCardNumber')}" th:errors="*{identityCardNumber}"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="field">
                             <label for="licenceNumber">Licence number</label>
                             <input class="input" id="licenceNumber" type="text" th:field="*{licenceNumber}"/>
                             <div class="field-error" th:if="${#fields.hasErrors('licenceNumber')}" th:errors="*{licenceNumber}"></div>
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="field">
                             <label for="experienceYears">Experience (years)</label>
                             <input class="input" id="experienceYears" type="number" min="0" max="60" th:field="*{experienceYears}"/>
                             <div class="field-error" th:if="${#fields.hasErrors('experienceYears')}" th:errors="*{experienceYears}"></div>
                         </div>
-                        <div class="field">
-                            <label for="password">Initial password</label>
-                            <input class="input" id="password" type="password" th:field="*{password}"/>
-                            <div class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
-                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="password">Initial password</label>
+                        <input class="input" id="password" type="password" th:field="*{password}"/>
+                        <div class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
                     </div>
                     <button class="btn btn-primary" type="submit">Add operator</button>
                 </form>

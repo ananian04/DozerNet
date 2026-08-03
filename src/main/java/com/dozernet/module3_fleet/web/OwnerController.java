@@ -58,6 +58,7 @@ public class OwnerController {
         }
         try {
             accountService.createAccount(form.getFullName(), form.getEmail(), form.getPhone(),
+                    form.getIdentityCardNumber(),
                     form.getPassword(), form.getConfirmPassword(), Role.OWNER, true);
         } catch (BusinessRuleException ex) {
             binding.reject("registration", ex.getMessage());

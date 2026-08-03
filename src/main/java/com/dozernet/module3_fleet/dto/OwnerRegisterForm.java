@@ -23,6 +23,10 @@ public class OwnerRegisterForm {
     @Pattern(regexp = ValidationPatterns.SL_PHONE, message = ValidationPatterns.SL_PHONE_MSG)
     private String phone;
 
+    @NotBlank(message = "Identity card number is required")
+    @Pattern(regexp = ValidationPatterns.NIC, message = ValidationPatterns.NIC_MSG)
+    private String identityCardNumber;
+
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 72, message = "Password must be at least 8 characters")
     private String password;
@@ -52,6 +56,14 @@ public class OwnerRegisterForm {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getIdentityCardNumber() {
+        return identityCardNumber;
+    }
+
+    public void setIdentityCardNumber(String identityCardNumber) {
+        this.identityCardNumber = identityCardNumber;
     }
 
     public String getPassword() {

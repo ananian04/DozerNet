@@ -92,15 +92,51 @@
     </div>
 </section>
 
+<!-- ===================== JOB USE CATEGORIES ===================== -->
+<section id="job-uses" class="job-uses" aria-label="Rental categories by job"
+         th:attr="data-default-image=@{${jobCategories[0].imagePath}}">
+    <div class="job-uses-media" aria-hidden="true">
+        <img class="job-uses-photo is-active"
+             th:src="@{${jobCategories[0].imagePath}}"
+             th:alt="${jobCategories[0].name}"
+             data-role="active"/>
+        <img class="job-uses-photo"
+             th:src="@{${jobCategories[0].imagePath}}"
+             alt=""
+             data-role="next"/>
+        <div class="job-uses-veil"></div>
+    </div>
+
+    <div class="job-uses-panel">
+        <span class="job-uses-badge">Rental categories</span>
+        <ul class="job-uses-list" role="list">
+            <li th:each="cat, iter : ${jobCategories}"
+                class="job-uses-item"
+                th:classappend="${iter.first} ? 'is-active'"
+                th:attr="data-image=@{${cat.imagePath}}, data-count=${cat.machineCount}">
+                <a class="job-uses-link"
+                   th:href="@{/machines(job=${cat.slug})}"
+                   th:text="${cat.name}">Digging</a>
+                <span class="job-uses-meta" aria-hidden="true">
+                    <span class="job-uses-count"
+                          th:text="|${cat.machineCount} machines|">0 machines</span>
+                    <span class="job-uses-arrow">&rarr;</span>
+                </span>
+            </li>
+        </ul>
+    </div>
+</section>
+
 <!-- ===================== CTA ===================== -->
-<section class="section">
+<section class="section cta-section">
     <div class="container">
         <div class="cta-band reveal">
+            <p class="eyebrow">Get started</p>
             <h2>Ready for your next site?</h2>
             <p>Create an account and book a verified machine in minutes.</p>
             <div class="hero-actions">
                 <a class="btn btn-primary btn-lg" th:href="@{/register}">Get started</a>
-                <a class="btn btn-ghost-light btn-lg" th:href="@{/machines}">Browse fleet</a>
+                <a class="btn btn-ghost btn-lg" th:href="@{/machines}">Browse fleet</a>
             </div>
         </div>
     </div>
@@ -109,5 +145,6 @@
 <footer th:replace="~{fragments/common :: footer}"></footer>
 <div th:replace="~{fragments/common :: reveal-script}"></div>
 <script th:src="@{/js/hero.js}"></script>
+<script th:src="@{/js/job-uses.js}"></script>
 </body>
 </html>

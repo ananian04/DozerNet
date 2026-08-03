@@ -22,6 +22,11 @@
                     <input class="input" type="email" th:value="${user.email}" disabled/>
                 </div>
                 <div class="field">
+                    <label>Identity card number (NIC)</label>
+                    <input class="input" type="text" th:value="${user.identityCardNumber}" disabled/>
+                    <p class="muted" style="font-size:.8rem;margin:.35rem 0 0">Set at registration and cannot be changed.</p>
+                </div>
+                <div class="field">
                     <label for="phone">Phone</label>
                     <input class="input" id="phone" type="text" th:field="*{phone}"/>
                     <div class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>

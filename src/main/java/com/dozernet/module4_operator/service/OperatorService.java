@@ -53,6 +53,7 @@ public class OperatorService {
     public OperatorProfile addCompanyOperator(CompanyOperatorForm form) {
         checkLicence(form.getLicenceNumber());
         User user = accountService.createAccount(form.getFullName(), form.getEmail(), form.getPhone(),
+                form.getIdentityCardNumber(),
                 form.getPassword(), form.getPassword(), Role.OPERATOR, true);
         return saveProfile(user, form.getLicenceNumber(), form.getExperienceYears(), false, true);
     }
@@ -61,6 +62,7 @@ public class OperatorService {
     public OperatorProfile registerDriver(DriverRegisterForm form) {
         checkLicence(form.getLicenceNumber());
         User user = accountService.createAccount(form.getFullName(), form.getEmail(), form.getPhone(),
+                form.getIdentityCardNumber(),
                 form.getPassword(), form.getConfirmPassword(), Role.OPERATOR, true);
         // Independent drivers are unverified until an admin checks their licence.
         return saveProfile(user, form.getLicenceNumber(), form.getExperienceYears(), true, false);

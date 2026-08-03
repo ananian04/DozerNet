@@ -28,3 +28,6 @@ docs/spec/
 
 # Environment secrets
 .env
+
+# Accidental IDE Simple Browser path artifacts
+vscode:/

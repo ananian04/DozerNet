@@ -18,13 +18,14 @@
         <div class="table-wrap">
             <table class="data">
                 <thead>
-                <tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th></th></tr>
+                <tr><th>Name</th><th>Email</th><th>Phone</th><th>NIC</th><th>Role</th><th>Status</th><th></th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="u : ${users}">
                     <td th:text="${u.fullName}">Name</td>
                     <td th:text="${u.email}">email</td>
                     <td th:text="${u.phone}">phone</td>
+                    <td th:text="${u.identityCardNumber}">NIC</td>
                     <td><span class="pill" th:text="${u.role}">CUSTOMER</span></td>
                     <td>
                         <span class="pill pill-approved" th:if="${u.enabled}">Active</span>

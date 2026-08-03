@@ -2,6 +2,7 @@ package com.dozernet.module1_customer.service;
 
 import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.model.Role;
+import com.dozernet.common.user.AccountService;
 import com.dozernet.common.user.User;
 import com.dozernet.common.user.UserRepository;
 import com.dozernet.module1_customer.dto.ProfileForm;
@@ -29,7 +30,8 @@ public class CustomerService {
     @Transactional
     public User register(RegisterForm form) {
         String email = form.getEmail().trim().toLowerCase();
-        String phone = normalisePhone(form.getPhone());
+        String phone = AccountService.normalisePhone(form.getPhone());
+        String nic = AccountService.normaliseNic(form.getIdentityCardNumber());
 
         if (!form.getPassword().equals(form.getConfirmPassword())) {
             throw new BusinessRuleException("Passwords do not match");
@@ -40,11 +42,15 @@ public class CustomerService {
         if (userRepository.existsByPhone(phone)) {
             throw new BusinessRuleException("An account with this phone number already exists");
         }
+        if (userRepository.existsByIdentityCardNumber(nic)) {
+            throw new BusinessRuleException("An account with this identity card number already exists");
+        }
 
         User user = new User(
                 form.getFullName().trim(),
                 email,
                 phone,
+                nic,
                 passwordEncoder.encode(form.getPassword()),
                 Role.CUSTOMER);
         user.setVerified(true);
@@ -53,12 +59,13 @@ public class CustomerService {
 
     @Transactional
     public void updateProfile(User user, ProfileForm form) {
-        String phone = normalisePhone(form.getPhone());
+        String phone = AccountService.normalisePhone(form.getPhone());
         if (!phone.equals(user.getPhone()) && userRepository.existsByPhone(phone)) {
             throw new BusinessRuleException("That phone number is already in use");
         }
         user.setFullName(form.getFullName().trim());
         user.setPhone(phone);
+        // identityCardNumber is immutable after registration
         userRepository.save(user);
     }
 
@@ -75,14 +82,5 @@ public class CustomerService {
         }
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-    }
-
-    /** Normalise SL phone numbers to a canonical 07XXXXXXXX form. */
-    private String normalisePhone(String raw) {
-        String digits = raw.replaceAll("[^0-9]", "");
-        if (digits.startsWith("94") && digits.length() == 11) {
-            digits = "0" + digits.substring(2);
-        }
-        return digits;
     }
 }

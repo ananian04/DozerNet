@@ -31,16 +31,25 @@
                     <div class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
                 </div>
                 <div class="field">
+                    <label for="identityCardNumber">Identity card number (NIC)</label>
+                    <input class="input" id="identityCardNumber" type="text" th:field="*{identityCardNumber}"
+                           placeholder="199512345678 or 123456789V"/>
+                    <div class="field-error" th:if="${#fields.hasErrors('identityCardNumber')}" th:errors="*{identityCardNumber}"></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field">
                     <label for="licenceNumber">Licence number</label>
                     <input class="input" id="licenceNumber" type="text" th:field="*{licenceNumber}"/>
                     <div class="field-error" th:if="${#fields.hasErrors('licenceNumber')}" th:errors="*{licenceNumber}"></div>
                 </div>
+                <div class="field">
+                    <label for="experienceYears">Years of experience</label>
+                    <input class="input" id="experienceYears" type="number" min="0" max="60" th:field="*{experienceYears}"/>
+                    <div class="field-error" th:if="${#fields.hasErrors('experienceYears')}" th:errors="*{experienceYears}"></div>
+                </div>
             </div>
-            <div class="field">
-                <label for="experienceYears">Years of experience</label>
-                <input class="input" id="experienceYears" type="number" min="0" max="60" th:field="*{experienceYears}"/>
-                <div class="field-error" th:if="${#fields.hasErrors('experienceYears')}" th:errors="*{experienceYears}"></div>
-            </div>
+            <p class="muted" style="font-size:.8rem;margin:0 0 var(--space-3)">NIC cannot be changed after registration.</p>
             <div class="form-row">
                 <div class="field">
                     <label for="password">Password</label>

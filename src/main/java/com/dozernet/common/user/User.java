@@ -26,6 +26,14 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String phone;
 
+    /**
+     * Sri Lankan National Identity Card number. Collected at registration and
+     * never editable afterwards (shown read-only on the profile).
+     * Nullable only to allow upgrading existing databases; new accounts always set it.
+     */
+    @Column(unique = true, length = 12)
+    private String identityCardNumber;
+
     /** BCrypt hash - never the plain password. */
     @Column(nullable = false)
     private String passwordHash;
@@ -56,6 +64,12 @@ public class User extends BaseEntity {
         this.role = role;
     }
 
+    public User(String fullName, String email, String phone, String identityCardNumber,
+                String passwordHash, Role role) {
+        this(fullName, email, phone, passwordHash, role);
+        this.identityCardNumber = identityCardNumber;
+    }
+
     public String getFullName() {
         return fullName;
     }
@@ -78,6 +92,14 @@ public class User extends BaseEntity {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getIdentityCardNumber() {
+        return identityCardNumber;
+    }
+
+    public void setIdentityCardNumber(String identityCardNumber) {
+        this.identityCardNumber = identityCardNumber;
     }
 
     public String getPasswordHash() {

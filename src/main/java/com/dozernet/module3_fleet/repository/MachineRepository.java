@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,4 +39,19 @@ public interface MachineRepository extends JpaRepository<Machine, Long> {
             order by m.dailyRate asc
             """)
     List<Machine> search(@Param("type") MachineType type, @Param("keyword") String keyword);
+
+    /**
+     * Public catalogue search filtered to any of the given machine types
+     * (used by landing-page job categories such as Digging / Loading).
+     */
+    @Query("""
+            select m from Machine m
+            where m.verified = true and m.status = com.dozernet.module3_fleet.entity.MachineStatus.AVAILABLE
+              and m.type in :types
+              and (:keyword is null or lower(m.location) like lower(concat('%', :keyword, '%'))
+                                    or lower(m.model)    like lower(concat('%', :keyword, '%')))
+            order by m.dailyRate asc
+            """)
+    List<Machine> searchByTypes(@Param("types") Collection<MachineType> types,
+                                @Param("keyword") String keyword);
 }
