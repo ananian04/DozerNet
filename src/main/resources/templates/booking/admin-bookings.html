@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Manage bookings')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar}"></nav>
+<div th:replace="~{fragments/common :: flash}"></div>
+
+<section class="section">
+    <div class="container">
+        <div class="page-head">
+            <div>
+                <p class="eyebrow">Admin &middot; Bookings</p>
+                <h1>Booking requests</h1>
+            </div>
+        </div>
+
+        <form class="toolbar" th:action="@{/admin/bookings}" method="get">
+            <select class="select" style="max-width:220px" name="status" onchange="this.form.submit()">
+                <option value="">All statuses</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.displayName}"
+                        th:selected="${selectedStatus != null and selectedStatus == s}"></option>
+            </select>
+            <a class="btn btn-ghost" th:href="@{/admin/bookings}">Reset</a>
+        </form>
+
+        <p class="muted" th:if="${#lists.isEmpty(bookings)}">No bookings to show.</p>
+
+        <div class="table-wrap" th:unless="${#lists.isEmpty(bookings)}">
+            <table class="data">
+                <thead>
+                <tr><th>Customer</th><th>Machine</th><th>Dates</th><th>Days</th><th>Total</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="b : ${bookings}">
+                    <td th:text="${b.customer.fullName}">Customer</td>
+                    <td th:text="${b.machine.model}">Machine</td>
+                    <td><span th:text="${b.startDate}">start</span> &rarr; <span th:text="${b.endDate}">end</span></td>
+                    <td th:text="${b.days}">1</td>
+                    <td><span th:text="${currencySymbol}">Rs.</span> <span th:text="${#numbers.formatDecimal(b.totalAmount,1,'COMMA',2,'POINT')}">0</span></td>
+                    <td><span class="pill" th:classappend="${'pill-' + b.status.name().toLowerCase()}" th:text="${b.status.displayName}">Status</span></td>
+                    <td style="display:flex;gap:.4rem">
+                        <th:block th:if="${b.status.name() == 'PENDING'}">
+                            <form th:action="@{'/admin/bookings/' + ${b.id} + '/approve'}" method="post">
+                                <button class="btn btn-primary btn-sm" type="submit">Approve</button>
+                            </form>
+                            <form th:action="@{'/admin/bookings/' + ${b.id} + '/reject'}" method="post">
+                                <button class="btn btn-danger btn-sm" type="submit">Reject</button>
+                            </form>
+                        </th:block>
+                        <span class="muted" th:unless="${b.status.name() == 'PENDING'}">&mdash;</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="~{fragments/common :: footer}"></footer>
+</body>
+</html>

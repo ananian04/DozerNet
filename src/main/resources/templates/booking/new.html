@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Book a machine')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar}"></nav>
+
+<section class="section">
+    <div class="container form-panel">
+        <a class="muted" th:href="@{'/machines/view/' + ${machine.id}}">&larr; Back to machine</a>
+        <h1>Book <span th:text="${machine.model}">Machine</span></h1>
+
+        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+        <div class="card" style="margin-bottom:var(--space-3)">
+            <p class="muted" style="margin:0">
+                <strong th:text="${machine.type.displayName}">Type</strong> &middot;
+                <span th:text="${machine.location}">Location</span> &middot;
+                <span th:text="${currencySymbol}">Rs.</span>
+                <span th:text="${#numbers.formatDecimal(machine.dailyRate,1,'COMMA',2,'POINT')}">0</span>/day
+            </p>
+        </div>
+
+        <form class="card" th:action="@{'/bookings/new/' + ${machine.id}}" th:object="${bookingForm}" method="post" novalidate>
+            <div class="form-row">
+                <div class="field">
+                    <label for="startDate">Start date</label>
+                    <input class="input" id="startDate" type="date" th:field="*{startDate}"/>
+                    <div class="field-error" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+                </div>
+                <div class="field">
+                    <label for="endDate">End date</label>
+                    <input class="input" id="endDate" type="date" th:field="*{endDate}"/>
+                    <div class="field-error" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+                </div>
+            </div>
+            <p class="muted" id="estimate" style="display:none">Estimated total: <strong id="estimateValue"></strong></p>
+            <button class="btn btn-primary" type="submit">Request booking</button>
+        </form>
+    </div>
+</section>
+
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<script th:inline="javascript">
+    (function () {
+        const today = new Date().toISOString().split('T')[0];
+        const start = document.getElementById('startDate');
+        const end = document.getElementById('endDate');
+        start.min = today; end.min = today;
+        const rate = /*[[${machine.dailyRate}]]*/ 0;
+        const symbol = /*[[${currencySymbol}]]*/ 'Rs.';
+        const est = document.getElementById('estimate');
+        const estVal = document.getElementById('estimateValue');
+        function recalc() {
+            if (start.value) end.min = start.value;
+            if (start.value && end.value) {
+                const s = new Date(start.value), e = new Date(end.value);
+                const days = Math.floor((e - s) / 86400000) + 1;
+                if (days > 0) {
+                    est.style.display = 'block';
+                    estVal.textContent = symbol + ' ' + (days * rate).toLocaleString() + ' (' + days + ' day' + (days > 1 ? 's' : '') + ')';
+                    return;
+                }
+            }
+            est.style.display = 'none';
+        }
+        start.addEventListener('change', recalc);
+        end.addEventListener('change', recalc);
+    })();
+</script>
+</body>
+</html>
