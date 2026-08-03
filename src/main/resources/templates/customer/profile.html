@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('My profile')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar}"></nav>
+<div th:replace="~{fragments/common :: flash}"></div>
+
+<section class="section">
+    <div class="container form-panel">
+        <div class="page-head"><h1>My profile</h1></div>
+
+        <div class="card" style="margin-bottom:var(--space-4)">
+            <h3>Contact details</h3>
+            <form th:action="@{/customer/profile}" th:object="${profileForm}" method="post" novalidate>
+                <div class="field">
+                    <label for="fullName">Full name</label>
+                    <input class="input" id="fullName" type="text" th:field="*{fullName}"/>
+                    <div class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+                </div>
+                <div class="field">
+                    <label>Email (login)</label>
+                    <input class="input" type="email" th:value="${user.email}" disabled/>
+                </div>
+                <div class="field">
+                    <label for="phone">Phone</label>
+                    <input class="input" id="phone" type="text" th:field="*{phone}"/>
+                    <div class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                </div>
+                <button class="btn btn-primary" type="submit">Save changes</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Change password</h3>
+            <form th:action="@{/customer/password}" method="post" novalidate>
+                <div class="field">
+                    <label for="currentPassword">Current password</label>
+                    <input class="input" id="currentPassword" name="currentPassword" type="password" required/>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="newPassword">New password</label>
+                        <input class="input" id="newPassword" name="newPassword" type="password" required/>
+                    </div>
+                    <div class="field">
+                        <label for="confirmPassword">Confirm new password</label>
+                        <input class="input" id="confirmPassword" name="confirmPassword" type="password" required/>
+                    </div>
+                </div>
+                <button class="btn btn-dark" type="submit">Update password</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="~{fragments/common :: footer}"></footer>
+</body>
+</html>
