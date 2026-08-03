@@ -1,6 +1,8 @@
 package com.dozernet.common.web;
 
+import com.dozernet.module3_fleet.service.FleetService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
@@ -9,8 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
+    private final FleetService fleetService;
+
+    public HomeController(FleetService fleetService) {
+        this.fleetService = fleetService;
+    }
+
     @GetMapping("/")
-    public String landing() {
+    public String landing(Model model) {
+        model.addAttribute("availableMachines", fleetService.search(null, null).size());
         return "public/landing";
     }
 

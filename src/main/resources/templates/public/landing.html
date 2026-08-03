@@ -18,13 +18,25 @@
     </div>
 </header>
 
-<!-- ===================== STATS ===================== -->
+<!-- ===================== HIGHLIGHTS ===================== -->
 <section class="section">
     <div class="container grid grid-4 text-center">
-        <div class="reveal"><div class="stat">5</div><p>Stakeholder perspectives</p></div>
-        <div class="reveal"><div class="stat">6</div><p>Core modules</p></div>
-        <div class="reveal"><div class="stat">1</div><p>Central database</p></div>
-        <div class="reveal"><div class="stat">24/7</div><p>Self-service access</p></div>
+        <div class="reveal">
+            <div class="stat" th:text="${availableMachines}">0</div>
+            <p>Machines ready to book</p>
+        </div>
+        <div class="reveal">
+            <div class="stat">Same day</div>
+            <p>Request a rental online</p>
+        </div>
+        <div class="reveal">
+            <div class="stat">Verified</div>
+            <p>Checked fleet &amp; operators</p>
+        </div>
+        <div class="reveal">
+            <div class="stat">Clear rates</div>
+            <p>Daily pricing in Sri Lankan Rs.</p>
+        </div>
     </div>
 </section>
 
