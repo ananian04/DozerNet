@@ -1,25 +1,40 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/common :: head('Home')}"></head>
-<body>
+<body class="page-home">
 <nav th:replace="~{fragments/common :: navbar}"></nav>
 
 <!-- ===================== HERO ===================== -->
 <header class="hero">
-    <canvas id="hero-canvas" class="hero-canvas"></canvas>
+    <div class="hero-media" aria-hidden="true">
+        <img class="hero-photo" th:src="@{/images/machines/excavator.jpg}" alt=""/>
+        <div class="hero-veil"></div>
+        <div class="hero-grain"></div>
+    </div>
+
     <div class="container hero-content">
-        <p class="eyebrow">DozerNet &middot; JCB Management</p>
-        <h1>From phone calls to one digital platform.</h1>
-        <p>Search, book and manage JCB machines, verified owners and operators &mdash; all in one trusted place.</p>
-        <div class="hero-actions">
-            <a class="btn btn-primary" th:href="@{/machines}">Browse machines</a>
-            <a class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.4)" th:href="@{/register}">Create an account</a>
+        <div class="hero-copy">
+            <p class="hero-brand hero-anim" style="--d:0">DozerNet</p>
+            <span class="hero-rule hero-anim" style="--d:1" aria-hidden="true"></span>
+            <h1 class="hero-anim" style="--d:2">Heavy machines.<br/>Booked in minutes.</h1>
+            <p class="hero-lede hero-anim" style="--d:3">
+                Search verified JCBs, reserve your dates, and track the job — without the phone chase.
+            </p>
+            <div class="hero-actions hero-anim" style="--d:4">
+                <a class="btn btn-primary btn-lg" th:href="@{/machines}">Browse machines</a>
+                <a class="btn btn-ghost-light btn-lg" th:href="@{/how-it-works}">See how it works</a>
+            </div>
         </div>
     </div>
+
+    <a class="hero-scroll hero-anim" style="--d:5" href="#highlights" aria-label="Scroll to highlights">
+        <span>Explore</span>
+        <span class="hero-scroll-line" aria-hidden="true"></span>
+    </a>
 </header>
 
 <!-- ===================== HIGHLIGHTS ===================== -->
-<section class="section">
+<section id="highlights" class="section">
     <div class="container grid grid-4 text-center">
         <div class="reveal">
             <div class="stat" th:text="${availableMachines}">0</div>
@@ -80,12 +95,12 @@
 <!-- ===================== CTA ===================== -->
 <section class="section">
     <div class="container">
-        <div class="card text-center reveal" style="background:var(--dark);color:#fff;padding:var(--space-6)">
-            <h2 style="color:#fff">Ready to move your fleet online?</h2>
-            <p style="color:rgba(255,255,255,.75)">Create an account and book your first machine in minutes.</p>
-            <div class="hero-actions" style="justify-content:center">
-                <a class="btn btn-primary" th:href="@{/register}">Get started</a>
-                <a class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.4)" th:href="@{/how-it-works}">How it works</a>
+        <div class="cta-band reveal">
+            <h2>Ready for your next site?</h2>
+            <p>Create an account and book a verified machine in minutes.</p>
+            <div class="hero-actions">
+                <a class="btn btn-primary btn-lg" th:href="@{/register}">Get started</a>
+                <a class="btn btn-ghost-light btn-lg" th:href="@{/machines}">Browse fleet</a>
             </div>
         </div>
     </div>
@@ -93,6 +108,6 @@
 
 <footer th:replace="~{fragments/common :: footer}"></footer>
 <div th:replace="~{fragments/common :: reveal-script}"></div>
-<script type="module" th:src="@{/js/hero.js}"></script>
+<script th:src="@{/js/hero.js}"></script>
 </body>
 </html>
