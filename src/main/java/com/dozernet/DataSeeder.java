@@ -7,6 +7,8 @@ import com.dozernet.module3_fleet.entity.Machine;
 import com.dozernet.module3_fleet.entity.MachineType;
 import com.dozernet.module3_fleet.entity.Ownership;
 import com.dozernet.module3_fleet.repository.MachineRepository;
+import com.dozernet.module4_operator.entity.OperatorProfile;
+import com.dozernet.module4_operator.repository.OperatorProfileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -33,13 +35,16 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MachineRepository machineRepository;
+    private final OperatorProfileRepository operatorProfileRepository;
 
     public DataSeeder(UserRepository userRepository,
                       PasswordEncoder passwordEncoder,
-                      MachineRepository machineRepository) {
+                      MachineRepository machineRepository,
+                      OperatorProfileRepository operatorProfileRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.machineRepository = machineRepository;
+        this.operatorProfileRepository = operatorProfileRepository;
     }
 
     @Override
@@ -52,15 +57,26 @@ public class DataSeeder implements CommandLineRunner {
         seed("Admin User", "admin@dozernet.lk", "0770000001", Role.ADMIN, true);
         seed("Chamara Perera", "customer@dozernet.lk", "0771111111", Role.CUSTOMER, true);
         seed("Nimal Fernando", "owner@dozernet.lk", "0772222222", Role.OWNER, true);
-        seed("Sunil Bandara", "operator@dozernet.lk", "0773333333", Role.OPERATOR, true);
+        User operator = seed("Sunil Bandara", "operator@dozernet.lk", "0773333333", Role.OPERATOR, true);
 
         seedMachines();
+        seedOperatorProfile(operator);
     }
 
-    private void seed(String name, String email, String phone, Role role, boolean verified) {
+    private User seed(String name, String email, String phone, Role role, boolean verified) {
         User u = new User(name, email, phone, passwordEncoder.encode(DEMO_PASSWORD), role);
         u.setVerified(verified);
-        userRepository.save(u);
+        return userRepository.save(u);
+    }
+
+    private void seedOperatorProfile(User operator) {
+        OperatorProfile p = new OperatorProfile();
+        p.setUser(operator);
+        p.setLicenceNumber("B1234567");
+        p.setExperienceYears(6);
+        p.setIndependent(false);
+        p.setVerified(true);
+        operatorProfileRepository.save(p);
     }
 
     private void seedMachines() {
