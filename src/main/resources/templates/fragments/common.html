@@ -5,6 +5,8 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="${title} ? ${title} + ' · DozerNet' : 'DozerNet'">DozerNet</title>
+    <link rel="icon" type="image/png" th:href="@{/images/favicon.png}"/>
+    <link rel="apple-touch-icon" th:href="@{/images/dozernet-icon.png}"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="stylesheet" th:href="@{/css/app.css}"/>
 </head>
@@ -13,8 +15,8 @@
 <!-- ===================== NAVBAR ===================== -->
 <nav th:fragment="navbar" class="nav">
     <div class="container nav-inner">
-        <a class="brand" th:href="@{/}">
-            <span class="dot"></span> DozerNet
+        <a class="brand" th:href="@{/}" aria-label="DozerNet home">
+            <img class="brand-logo" th:src="@{/images/dozernet-logo.png}" alt="DozerNet"/>
         </a>
         <ul class="nav-links">
             <li><a class="hide-sm" th:href="@{/machines}">Machines</a></li>
@@ -54,7 +56,9 @@
 <!-- ===================== FOOTER ===================== -->
 <footer th:fragment="footer" class="footer">
     <div class="container">
-        <a class="brand" th:href="@{/}"><span class="dot"></span> DozerNet</a>
+        <a class="brand" th:href="@{/}" aria-label="DozerNet home">
+            <img class="brand-logo brand-logo-footer" th:src="@{/images/dozernet-logo.png}" alt="DozerNet"/>
+        </a>
         <p style="margin-top:.6rem">Web-Based JCB Management System &middot; SE2030 Software Engineering Group Project.</p>
         <p class="muted">&copy; 2026 DozerNet. Built by Group MLB-B4G2-09.</p>
     </div>
