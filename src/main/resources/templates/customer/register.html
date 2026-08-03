@@ -9,11 +9,10 @@
         <p class="eyebrow">Join DozerNet</p>
         <h1 style="font-size:1.8rem">Create your account</h1>
 
-        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
-            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</div>
-        </div>
-
         <form th:action="@{/register}" th:object="${registerForm}" method="post" novalidate>
+            <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+                <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</div>
+            </div>
             <div class="field">
                 <label for="fullName">Full name</label>
                 <input class="input" id="fullName" type="text" th:field="*{fullName}" placeholder="Chamara Perera"/>

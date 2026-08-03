@@ -10,11 +10,10 @@
         <h1 style="font-size:1.8rem">Join as an operator</h1>
         <p class="muted">Register to get assigned to jobs. An admin will verify your licence before you can be assigned.</p>
 
-        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
-            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</div>
-        </div>
-
         <form th:action="@{/register/driver}" th:object="${driverForm}" method="post" novalidate>
+            <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+                <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</div>
+            </div>
             <div class="field">
                 <label for="fullName">Full name</label>
                 <input class="input" id="fullName" type="text" th:field="*{fullName}"/>
