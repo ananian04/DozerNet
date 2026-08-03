@@ -34,7 +34,8 @@
                      style="display:grid;place-items:center;background:linear-gradient(135deg,#2a2a2e,#0a0a0a);color:var(--accent);font-weight:600">
                     <span th:text="${m.type.displayName}">Type</span>
                 </div>
-                <img th:if="${m.imageUrl != null and !m.imageUrl.isBlank()}" th:src="${m.imageUrl}" alt="machine"/>
+                <img th:if="${m.imageUrl != null and !m.imageUrl.isBlank()}"
+                     th:src="${m.imageUrl}" th:alt="${m.model}"/>
                 <h3 style="margin-top:1rem" th:text="${m.model}">Model</h3>
                 <p class="muted" style="margin:0">
                     <span th:text="${m.type.displayName}">Type</span> &middot;

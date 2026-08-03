@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Seeds demo accounts (with correctly BCrypt-hashed passwords) so the app is
@@ -31,6 +33,18 @@ public class DataSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
     public static final String DEMO_PASSWORD = "password123";
+
+    private static final Map<MachineType, String> TYPE_IMAGES = new EnumMap<>(MachineType.class);
+
+    static {
+        TYPE_IMAGES.put(MachineType.BACKHOE_LOADER, "/images/machines/backhoe-loader.jpg");
+        TYPE_IMAGES.put(MachineType.EXCAVATOR, "/images/machines/excavator.jpg");
+        TYPE_IMAGES.put(MachineType.WHEEL_LOADER, "/images/machines/wheel-loader.jpg");
+        TYPE_IMAGES.put(MachineType.SKID_STEER, "/images/machines/skid-steer.jpg");
+        TYPE_IMAGES.put(MachineType.TELEHANDLER, "/images/machines/telehandler.jpg");
+        TYPE_IMAGES.put(MachineType.COMPACTOR, "/images/machines/compactor.jpg");
+        TYPE_IMAGES.put(MachineType.BULLDOZER, "/images/machines/bulldozer.jpg");
+    }
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -49,18 +63,38 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (userRepository.count() > 0) {
-            return;
+        if (userRepository.count() == 0) {
+            log.info("Seeding demo users (password for all: {})", DEMO_PASSWORD);
+
+            seed("Admin User", "admin@dozernet.lk", "0770000001", Role.ADMIN, true);
+            seed("Chamara Perera", "customer@dozernet.lk", "0771111111", Role.CUSTOMER, true);
+            seed("Nimal Fernando", "owner@dozernet.lk", "0772222222", Role.OWNER, true);
+            User operator = seed("Sunil Bandara", "operator@dozernet.lk", "0773333333", Role.OPERATOR, true);
+
+            seedMachines();
+            seedOperatorProfile(operator);
         }
-        log.info("Seeding demo users (password for all: {})", DEMO_PASSWORD);
 
-        seed("Admin User", "admin@dozernet.lk", "0770000001", Role.ADMIN, true);
-        seed("Chamara Perera", "customer@dozernet.lk", "0771111111", Role.CUSTOMER, true);
-        seed("Nimal Fernando", "owner@dozernet.lk", "0772222222", Role.OWNER, true);
-        User operator = seed("Sunil Bandara", "operator@dozernet.lk", "0773333333", Role.OPERATOR, true);
+        // Always fill missing machine photos (existing DB rows included).
+        ensureMachineImages();
+    }
 
-        seedMachines();
-        seedOperatorProfile(operator);
+    private void ensureMachineImages() {
+        int updated = 0;
+        for (Machine m : machineRepository.findAll()) {
+            if (m.getImageUrl() == null || m.getImageUrl().isBlank()) {
+                m.setImageUrl(imageFor(m.getType()));
+                machineRepository.save(m);
+                updated++;
+            }
+        }
+        if (updated > 0) {
+            log.info("Assigned sample images to {} machine(s)", updated);
+        }
+    }
+
+    private static String imageFor(MachineType type) {
+        return TYPE_IMAGES.getOrDefault(type, "/images/machines/excavator.jpg");
     }
 
     private User seed(String name, String email, String phone, Role role, boolean verified) {
@@ -103,6 +137,7 @@ public class DataSeeder implements CommandLineRunner {
         m.setLocation(location);
         m.setDailyRate(new BigDecimal(dailyRate));
         m.setDescription(description);
+        m.setImageUrl(imageFor(type));
         m.setOwnership(Ownership.COMPANY);
         m.setVerified(true);
         machineRepository.save(m);
