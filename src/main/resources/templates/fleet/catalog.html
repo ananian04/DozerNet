@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Machines')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar}"></nav>
+
+<section class="section">
+    <div class="container">
+        <div class="page-head">
+            <div>
+                <p class="eyebrow">Catalogue</p>
+                <h1>Available machines</h1>
+            </div>
+        </div>
+
+        <!-- Search / filter -->
+        <form class="toolbar" th:action="@{/machines}" method="get">
+            <input class="input" style="max-width:280px" type="text" name="keyword"
+                   th:value="${keyword}" placeholder="Search by location or model"/>
+            <select class="select" style="max-width:220px" name="type">
+                <option value="">All types</option>
+                <option th:each="t : ${types}" th:value="${t}" th:text="${t.displayName}"
+                        th:selected="${selectedType != null and selectedType == t}"></option>
+            </select>
+            <button class="btn btn-dark" type="submit">Search</button>
+            <a class="btn btn-ghost" th:href="@{/machines}">Reset</a>
+        </form>
+
+        <p class="muted" th:if="${#lists.isEmpty(machines)}">No machines match your search right now.</p>
+
+        <div class="grid grid-3">
+            <div class="card card-hover machine-card" th:each="m : ${machines}">
+                <div class="machine-thumb" th:if="${m.imageUrl == null or m.imageUrl.isBlank()}"
+                     style="display:grid;place-items:center;background:linear-gradient(135deg,#2a2a2e,#0a0a0a);color:var(--accent);font-weight:600">
+                    <span th:text="${m.type.displayName}">Type</span>
+                </div>
+                <img th:if="${m.imageUrl != null and !m.imageUrl.isBlank()}" th:src="${m.imageUrl}" alt="machine"/>
+                <h3 style="margin-top:1rem" th:text="${m.model}">Model</h3>
+                <p class="muted" style="margin:0">
+                    <span th:text="${m.type.displayName}">Type</span> &middot;
+                    <span th:text="${m.location}">Location</span>
+                </p>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem">
+                    <strong><span th:text="${currencySymbol}">Rs.</span> <span th:text="${#numbers.formatDecimal(m.dailyRate,1,'COMMA',2,'POINT')}">0</span>/day</strong>
+                    <a class="btn btn-primary btn-sm" th:href="@{'/machines/view/' + ${m.id}}">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="~{fragments/common :: footer}"></footer>
+</body>
+</html>
