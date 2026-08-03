@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Admin dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar}"></nav>
+<div th:replace="~{fragments/common :: flash}"></div>
+
+<section class="section">
+    <div class="container">
+        <div class="page-head">
+            <div>
+                <p class="eyebrow">Administrator</p>
+                <h1>Dashboard</h1>
+            </div>
+        </div>
+
+        <div class="stat-grid">
+            <a class="card card-hover" th:href="@{/admin/bookings}" style="text-decoration:none;color:inherit">
+                <div class="stat" th:text="${stats.pendingBookings}">0</div><p>Pending bookings</p>
+            </a>
+            <a class="card card-hover" th:href="@{/admin/listings}" style="text-decoration:none;color:inherit">
+                <div class="stat" th:text="${stats.pendingListings}">0</div><p>Listings to approve</p>
+            </a>
+            <a class="card card-hover" th:href="@{/admin/operators}" style="text-decoration:none;color:inherit">
+                <div class="stat" th:text="${stats.pendingOperators}">0</div><p>Operators to verify</p>
+            </a>
+            <a class="card card-hover" th:href="@{/admin/invoices}" style="text-decoration:none;color:inherit">
+                <div class="stat" th:text="${stats.unpaidInvoices}">0</div><p>Unpaid invoices</p>
+            </a>
+        </div>
+
+        <div class="grid grid-2" style="margin-bottom:var(--space-5)">
+            <div class="card">
+                <p class="muted" style="margin:0">Revenue collected</p>
+                <div class="stat"><span th:text="${currencySymbol}">Rs.</span> <span th:text="${#numbers.formatDecimal(stats.revenueCollected,1,'COMMA',2,'POINT')}">0</span></div>
+            </div>
+            <div class="card">
+                <p class="muted" style="margin:0">Outstanding balance</p>
+                <div class="stat"><span th:text="${currencySymbol}">Rs.</span> <span th:text="${#numbers.formatDecimal(stats.outstanding,1,'COMMA',2,'POINT')}">0</span></div>
+            </div>
+        </div>
+
+        <h3>Manage</h3>
+        <div class="grid grid-4">
+            <a class="card card-hover" th:href="@{/admin/machines}" style="text-decoration:none;color:inherit"><h3>Fleet</h3><p class="muted">Company & private machines</p></a>
+            <a class="card card-hover" th:href="@{/admin/bookings}" style="text-decoration:none;color:inherit"><h3>Bookings</h3><p class="muted">Approve or reject requests</p></a>
+            <a class="card card-hover" th:href="@{/admin/assignments}" style="text-decoration:none;color:inherit"><h3>Assignments</h3><p class="muted">Assign operators to jobs</p></a>
+            <a class="card card-hover" th:href="@{/admin/operators}" style="text-decoration:none;color:inherit"><h3>Operators</h3><p class="muted">Add & verify operators</p></a>
+            <a class="card card-hover" th:href="@{/admin/maintenance}" style="text-decoration:none;color:inherit"><h3>Maintenance</h3><p class="muted">Schedule & service history</p></a>
+            <a class="card card-hover" th:href="@{/admin/invoices}" style="text-decoration:none;color:inherit"><h3>Invoices</h3><p class="muted">Billing & payments</p></a>
+            <a class="card card-hover" th:href="@{/admin/reports}" style="text-decoration:none;color:inherit"><h3>Reports</h3><p class="muted">Bookings & revenue</p></a>
+            <a class="card card-hover" th:href="@{/admin/users}" style="text-decoration:none;color:inherit"><h3>Users</h3><p class="muted">Manage accounts</p></a>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="~{fragments/common :: footer}"></footer>
+</body>
+</html>

@@ -15,7 +15,7 @@
             <a class="btn btn-primary" th:href="@{/machines}">Book a machine</a>
         </div>
 
-        <div class="grid grid-3">
+        <div class="grid grid-4">
             <a class="card card-hover" th:href="@{/machines}" style="text-decoration:none;color:inherit">
                 <h3>Browse machines</h3>
                 <p>Search available JCBs by type, location and date.</p>
@@ -23,6 +23,10 @@
             <a class="card card-hover" th:href="@{/customer/bookings}" style="text-decoration:none;color:inherit">
                 <h3>My bookings</h3>
                 <p>Track the status of your booking requests and rentals.</p>
+            </a>
+            <a class="card card-hover" th:href="@{/customer/invoices}" style="text-decoration:none;color:inherit">
+                <h3>My invoices</h3>
+                <p>View invoices and payment history for completed jobs.</p>
             </a>
             <a class="card card-hover" th:href="@{/customer/profile}" style="text-decoration:none;color:inherit">
                 <h3>My profile</h3>
