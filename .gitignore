@@ -1,0 +1,30 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+nbproject/
+.DS_Store
+
+# Spring Boot
+*.log
+application-local.properties
+
+# OS
+Thumbs.db
+
+# Spec documents (kept out of the code repo)
+docs/spec/
+
+# Environment secrets
+.env

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('About')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar}"></nav>
+
+<section class="section">
+    <div class="container form-panel">
+        <p class="eyebrow">About</p>
+        <h1>DozerNet</h1>
+        <p class="lead">A web-based JCB management system that replaces phone-based coordination with a transparent, centralised platform connecting customers, private owners, operators and administrators.</p>
+
+        <div class="grid grid-2" style="margin-top:var(--space-5)">
+            <div class="card reveal">
+                <h3>The problem</h3>
+                <p>Bookings, maintenance, operator and payment records sit in different places, coordinated over calls and messages &mdash; slow and error-prone.</p>
+            </div>
+            <div class="card reveal">
+                <h3>Our solution</h3>
+                <p>One verified platform with shared, up-to-date information for every stakeholder, built on solid object-oriented design.</p>
+            </div>
+        </div>
+
+        <h2 style="margin-top:var(--space-6)">Group MLB-B4G2-09</h2>
+        <p>SE2030 Software Engineering &middot; BSc (Hons) in Information Technology.</p>
+        <div class="table-wrap" style="margin-top:var(--space-3)">
+            <table class="data">
+                <thead><tr><th>Member</th><th>Student ID</th><th>Module</th></tr></thead>
+                <tbody>
+                    <tr><td>G. Ananian</td><td>IT25102642</td><td>Customer Management</td></tr>
+                    <tr><td>Theekshana A.D.</td><td>IT25101810</td><td>Booking &amp; Rental Management</td></tr>
+                    <tr><td>Jayawardhana A.G.D.L.</td><td>IT25100798</td><td>Fleet (JCB) Management</td></tr>
+                    <tr><td>Perera M.A.S.A.</td><td>IT25103606</td><td>Operator Management</td></tr>
+                    <tr><td>Ruvendi R.G.K.</td><td>IT25101701</td><td>Maintenance &amp; Service</td></tr>
+                    <tr><td>Thathsara J.P.T.</td><td>IT25103683</td><td>Payment &amp; Administration</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<div th:replace="~{fragments/common :: reveal-script}"></div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Home')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar}"></nav>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+    <canvas id="hero-canvas" class="hero-canvas"></canvas>
+    <div class="container hero-content">
+        <p class="eyebrow">DozerNet &middot; JCB Management</p>
+        <h1>From phone calls to one digital platform.</h1>
+        <p>Search, book and manage JCB machines, verified owners and operators &mdash; all in one trusted place.</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" th:href="@{/machines}">Browse machines</a>
+            <a class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.4)" th:href="@{/register}">Create an account</a>
+        </div>
+    </div>
+</header>
+
+<!-- ===================== STATS ===================== -->
+<section class="section">
+    <div class="container grid grid-4 text-center">
+        <div class="reveal"><div class="stat">5</div><p>Stakeholder perspectives</p></div>
+        <div class="reveal"><div class="stat">6</div><p>Core modules</p></div>
+        <div class="reveal"><div class="stat">1</div><p>Central database</p></div>
+        <div class="reveal"><div class="stat">24/7</div><p>Self-service access</p></div>
+    </div>
+</section>
+
+<!-- ===================== FEATURES ===================== -->
+<section class="section" style="background:var(--surface);border-block:1px solid var(--line)">
+    <div class="container">
+        <div class="text-center" style="max-width:60ch;margin:0 auto var(--space-5)">
+            <p class="eyebrow">Why DozerNet</p>
+            <h2>One verified platform. Shared, up-to-date information.</h2>
+            <p class="lead" style="margin:0 auto">JCB rental workflows are scattered across calls and messages. DozerNet brings booking, fleet, operators, maintenance and payments together.</p>
+        </div>
+        <div class="grid grid-3">
+            <div class="card card-hover reveal">
+                <h3>Search &amp; book online</h3>
+                <p>Check real-time availability and book a machine for your dates &mdash; no phone tag, no double-bookings.</p>
+            </div>
+            <div class="card card-hover reveal">
+                <h3>Verified fleet &amp; owners</h3>
+                <p>Company and admin-verified private machines in one trusted inventory with live availability.</p>
+            </div>
+            <div class="card card-hover reveal">
+                <h3>Qualified operators</h3>
+                <p>Every job is carried out by a verified, licensed operator assigned to your booking.</p>
+            </div>
+            <div class="card card-hover reveal">
+                <h3>Maintenance aware</h3>
+                <p>Unsafe or overdue machines are automatically kept out of the booking pool.</p>
+            </div>
+            <div class="card card-hover reveal">
+                <h3>Transparent payments</h3>
+                <p>Invoices are generated on completion, with clear, traceable payment records.</p>
+            </div>
+            <div class="card card-hover reveal">
+                <h3>Admin oversight</h3>
+                <p>Approvals, verifications and reports in a single dashboard for the whole operation.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== CTA ===================== -->
+<section class="section">
+    <div class="container">
+        <div class="card text-center reveal" style="background:var(--dark);color:#fff;padding:var(--space-6)">
+            <h2 style="color:#fff">Ready to move your fleet online?</h2>
+            <p style="color:rgba(255,255,255,.75)">Create an account and book your first machine in minutes.</p>
+            <div class="hero-actions" style="justify-content:center">
+                <a class="btn btn-primary" th:href="@{/register}">Get started</a>
+                <a class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.4)" th:href="@{/how-it-works}">How it works</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<div th:replace="~{fragments/common :: reveal-script}"></div>
+<script type="module" th:src="@{/js/hero.js}"></script>
+</body>
+</html>
