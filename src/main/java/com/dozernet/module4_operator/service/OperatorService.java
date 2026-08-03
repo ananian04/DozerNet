@@ -137,7 +137,7 @@ public class OperatorService {
     // ---------- Reads ----------
 
     public List<OperatorProfile> allOperators() {
-        return profileRepository.findAll();
+        return profileRepository.findAllWithUser();
     }
 
     public List<OperatorProfile> pendingVerifications() {

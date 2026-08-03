@@ -13,7 +13,15 @@ import java.util.Optional;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
-    List<Assignment> findByOperatorOrderByCreatedAtDesc(User operator);
+    @Query("""
+            select a from Assignment a
+            join fetch a.booking b
+            join fetch b.machine
+            join fetch b.customer
+            where a.operator = :operator
+            order by a.createdAt desc
+            """)
+    List<Assignment> findByOperatorOrderByCreatedAtDesc(@Param("operator") User operator);
 
     Optional<Assignment> findByBooking(Booking booking);
 

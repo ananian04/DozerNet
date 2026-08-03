@@ -10,14 +10,43 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<Booking> findByCustomerOrderByStartDateDesc(User customer);
+    @Query("""
+            select b from Booking b
+            join fetch b.machine
+            join fetch b.customer
+            where b.customer = :customer
+            order by b.startDate desc
+            """)
+    List<Booking> findByCustomerOrderByStartDateDesc(@Param("customer") User customer);
 
-    List<Booking> findByStatusOrderByCreatedAtDesc(BookingStatus status);
+    @Query("""
+            select b from Booking b
+            join fetch b.machine
+            join fetch b.customer
+            where b.status = :status
+            order by b.createdAt desc
+            """)
+    List<Booking> findByStatusOrderByCreatedAtDesc(@Param("status") BookingStatus status);
 
+    @Query("""
+            select b from Booking b
+            join fetch b.machine
+            join fetch b.customer
+            order by b.createdAt desc
+            """)
     List<Booking> findAllByOrderByCreatedAtDesc();
+
+    @Query("""
+            select b from Booking b
+            join fetch b.machine
+            join fetch b.customer
+            where b.id = :id
+            """)
+    Optional<Booking> findByIdWithDetails(@Param("id") Long id);
 
     long countByStatus(BookingStatus status);
 

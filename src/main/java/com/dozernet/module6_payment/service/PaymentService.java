@@ -99,7 +99,8 @@ public class PaymentService {
     // ---------- Reads ----------
 
     public Invoice getInvoice(Long id) {
-        return invoiceRepository.findById(id)
+        return invoiceRepository.findByIdWithDetails(id)
+                .or(() -> invoiceRepository.findById(id))
                 .orElseThrow(() -> ResourceNotFoundException.of("Invoice", id));
     }
 

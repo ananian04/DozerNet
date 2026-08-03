@@ -148,7 +148,8 @@ public class BookingService {
     // ---------- Reads ----------
 
     public Booking getById(Long id) {
-        return bookingRepository.findById(id)
+        return bookingRepository.findByIdWithDetails(id)
+                .or(() -> bookingRepository.findById(id))
                 .orElseThrow(() -> ResourceNotFoundException.of("Booking", id));
     }
 
