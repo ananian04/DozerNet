@@ -6,11 +6,14 @@ import com.dozernet.common.model.Role;
 import com.dozernet.common.notification.NotificationService;
 import com.dozernet.common.user.User;
 import com.dozernet.common.user.UserRepository;
+import com.dozernet.module2_booking.SriLankaDistricts;
 import com.dozernet.module2_booking.entity.Booking;
 import com.dozernet.module2_booking.entity.BookingStatus;
 import com.dozernet.module2_booking.repository.BookingRepository;
 import com.dozernet.module3_fleet.entity.Machine;
 import com.dozernet.module3_fleet.service.FleetService;
+import com.dozernet.module6_payment.service.PaymentService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +22,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Booking & Rental Management business logic. Enforces the core rules that keep
+ * Booking &amp; Rental Management business logic. Enforces the core rules that keep
  * the calendar conflict-free:
  *  - a machine must be available &amp; verified to be booked;
  *  - bookings cannot start in the past and must end on/after the start date;
  *  - date ranges cannot overlap an existing pending/approved booking.
+ * Approval also issues an unpaid invoice (pay before operator assignment).
  */
 @Service
 public class BookingService {
@@ -32,23 +36,28 @@ public class BookingService {
     private final FleetService fleetService;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
+    private final PaymentService paymentService;
 
     public BookingService(BookingRepository bookingRepository,
                           FleetService fleetService,
                           NotificationService notificationService,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          @Lazy PaymentService paymentService) {
         this.bookingRepository = bookingRepository;
         this.fleetService = fleetService;
         this.notificationService = notificationService;
         this.userRepository = userRepository;
+        this.paymentService = paymentService;
     }
 
     // ---------- Create ----------
 
     @Transactional
-    public Booking create(User customer, Long machineId, LocalDate startDate, LocalDate endDate) {
+    public Booking create(User customer, Long machineId, LocalDate startDate, LocalDate endDate,
+                          String jobSiteDistrict, String jobSiteAddress) {
         Machine machine = fleetService.getById(machineId);
         validateDates(startDate, endDate);
+        validateJobSite(jobSiteDistrict, jobSiteAddress);
 
         if (!machine.isBookable()) {
             throw new BusinessRuleException("This machine is not currently available for booking.");
@@ -62,6 +71,8 @@ public class BookingService {
 
         Booking booking = new Booking(customer, machine, startDate, endDate);
         booking.setStatus(BookingStatus.PENDING);
+        booking.setJobSiteDistrict(jobSiteDistrict.trim());
+        booking.setJobSiteAddress(jobSiteAddress.trim());
         booking.setTotalAmount(machine.getDailyRate().multiply(BigDecimal.valueOf(booking.getDays())));
         Booking saved = bookingRepository.save(booking);
 
@@ -69,8 +80,24 @@ public class BookingService {
                 "Your booking request for " + machine.getModel() + " is pending admin approval.");
         notifyAdmins("New booking request",
                 customer.getFullName() + " requested " + machine.getModel()
+                        + " at " + saved.getJobSiteLabel()
                         + " (" + startDate + " to " + endDate + ").");
         return saved;
+    }
+
+    public void validateJobSite(String district, String address) {
+        if (district == null || district.isBlank()) {
+            throw new BusinessRuleException("Select the district where the machine will work.");
+        }
+        if (!SriLankaDistricts.isValid(district.trim())) {
+            throw new BusinessRuleException("Select a valid Sri Lanka district.");
+        }
+        if (address == null || address.isBlank()) {
+            throw new BusinessRuleException("Enter the job site address or landmark.");
+        }
+        if (address.trim().length() > 255) {
+            throw new BusinessRuleException("Job site address must be at most 255 characters.");
+        }
     }
 
     /** Shared date-rule validation (also reused by tests). */
@@ -116,8 +143,8 @@ public class BookingService {
         }
         b.setStatus(BookingStatus.APPROVED);
         bookingRepository.save(b);
-        notificationService.notify(b.getCustomer(), "Booking approved",
-                "Your booking for " + b.getMachine().getModel() + " has been approved.");
+        // Issues UNPAID invoice and notifies customer (invoice emailed to their address).
+        paymentService.createInvoiceForApprovedBooking(b);
     }
 
     @Transactional
@@ -142,7 +169,7 @@ public class BookingService {
         b.setStatus(BookingStatus.COMPLETED);
         bookingRepository.save(b);
         notificationService.notify(b.getCustomer(), "Job completed",
-                "Your rental of " + b.getMachine().getModel() + " is complete. An invoice will be issued.");
+                "Your rental of " + b.getMachine().getModel() + " is complete. Thank you for using DozerNet.");
     }
 
     // ---------- Reads ----------
@@ -171,6 +198,11 @@ public class BookingService {
 
     public long countByStatus(BookingStatus status) {
         return bookingRepository.countByStatus(status);
+    }
+
+    /** Approved rentals whose window includes today — for admin fleet whereabouts. */
+    public List<Booking> activeDeploymentsToday() {
+        return bookingRepository.findActiveDeploymentsOn(LocalDate.now());
     }
 
     private void notifyAdmins(String title, String message) {

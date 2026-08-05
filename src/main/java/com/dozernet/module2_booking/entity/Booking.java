@@ -42,6 +42,14 @@ public class Booking extends BaseEntity {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    /** Sri Lanka district where the machine will work. */
+    @Column(nullable = false, length = 40)
+    private String jobSiteDistrict = "";
+
+    /** Landmark / road / site detail within the district. */
+    @Column(nullable = false, length = 255)
+    private String jobSiteAddress = "";
+
     public Booking() {
     }
 
@@ -50,6 +58,17 @@ public class Booking extends BaseEntity {
         this.machine = machine;
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+
+    /** Combined label for tables and dashboards, e.g. "Colombo — Near Kaduwela flyover". */
+    public String getJobSiteLabel() {
+        if (jobSiteDistrict == null || jobSiteDistrict.isBlank()) {
+            return jobSiteAddress != null ? jobSiteAddress : "";
+        }
+        if (jobSiteAddress == null || jobSiteAddress.isBlank()) {
+            return jobSiteDistrict;
+        }
+        return jobSiteDistrict + " — " + jobSiteAddress;
     }
 
     /** Inclusive rental length in days (same start/end = 1 day). */
@@ -106,5 +125,21 @@ public class Booking extends BaseEntity {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public String getJobSiteDistrict() {
+        return jobSiteDistrict;
+    }
+
+    public void setJobSiteDistrict(String jobSiteDistrict) {
+        this.jobSiteDistrict = jobSiteDistrict;
+    }
+
+    public String getJobSiteAddress() {
+        return jobSiteAddress;
+    }
+
+    public void setJobSiteAddress(String jobSiteAddress) {
+        this.jobSiteAddress = jobSiteAddress;
     }
 }

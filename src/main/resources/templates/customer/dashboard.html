@@ -26,12 +26,18 @@
             </a>
             <a class="card card-hover" th:href="@{/customer/invoices}" style="text-decoration:none;color:inherit">
                 <h3>My invoices</h3>
-                <p>View invoices and payment history for completed jobs.</p>
+                <p>View invoices and pay online after your booking is approved.</p>
             </a>
             <a class="card card-hover" th:href="@{/customer/profile}" style="text-decoration:none;color:inherit">
                 <h3>My profile</h3>
                 <p>Update your contact details and password.</p>
             </a>
+        </div>
+
+        <div class="alert alert-info" style="margin-top:var(--space-4)"
+             th:if="${unpaidCount != null and unpaidCount > 0}">
+            You have <strong th:text="${unpaidCount}">1</strong> unpaid invoice(s).
+            <a th:href="@{/customer/invoices}">Pay now</a> to confirm your rental — the invoice was sent to your email.
         </div>
     </div>
 </section>

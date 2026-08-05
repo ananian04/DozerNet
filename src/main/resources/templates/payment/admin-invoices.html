@@ -20,7 +20,8 @@
 
         <div class="card" style="margin-bottom:var(--space-5)"
              th:if="${pendingInvoices != null and !#lists.isEmpty(pendingInvoices)}">
-            <h3>Completed jobs awaiting invoice</h3>
+            <h3>Bookings awaiting invoice (recovery)</h3>
+            <p class="muted">Invoices are normally created when a booking is approved. Use this only if one is missing.</p>
             <div class="table-wrap">
                 <table class="data">
                     <thead>

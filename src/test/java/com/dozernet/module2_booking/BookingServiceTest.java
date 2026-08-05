@@ -41,6 +41,7 @@ class BookingServiceTest {
     @Mock FleetService fleetService;
     @Mock NotificationService notificationService;
     @Mock UserRepository userRepository;
+    @Mock com.dozernet.module6_payment.service.PaymentService paymentService;
 
     @InjectMocks BookingService bookingService;
 
@@ -91,7 +92,8 @@ class BookingServiceTest {
     void rejectsBookingOfUnavailableMachine() {
         machine.setStatus(MachineStatus.MAINTENANCE);
         assertThatThrownBy(() -> bookingService.create(customer, 10L,
-                LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)))
+                LocalDate.now().plusDays(1), LocalDate.now().plusDays(2),
+                "Colombo", "Near Kaduwela flyover"))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("not currently available");
     }
@@ -101,7 +103,8 @@ class BookingServiceTest {
         when(bookingRepository.findOverlapping(any(), any(), any()))
                 .thenReturn(List.of(new Booking()));
         assertThatThrownBy(() -> bookingService.create(customer, 10L,
-                LocalDate.now().plusDays(1), LocalDate.now().plusDays(3)))
+                LocalDate.now().plusDays(1), LocalDate.now().plusDays(3),
+                "Gampaha", "Site gate A"))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("already booked");
     }
@@ -112,11 +115,25 @@ class BookingServiceTest {
         LocalDate start = LocalDate.now().plusDays(1);
         LocalDate end = start.plusDays(2); // 3 inclusive days
 
-        Booking b = bookingService.create(customer, 10L, start, end);
+        Booking b = bookingService.create(customer, 10L, start, end,
+                "Colombo", "Near Kaduwela flyover");
 
         assertThat(b.getStatus()).isEqualTo(BookingStatus.PENDING);
         assertThat(b.getDays()).isEqualTo(3);
         assertThat(b.getTotalAmount()).isEqualByComparingTo("30000.00");
+        assertThat(b.getJobSiteDistrict()).isEqualTo("Colombo");
+        assertThat(b.getJobSiteAddress()).isEqualTo("Near Kaduwela flyover");
+        assertThat(b.getJobSiteLabel()).isEqualTo("Colombo — Near Kaduwela flyover");
+    }
+
+    @Test
+    void rejectsInvalidJobSiteDistrict() {
+        when(bookingRepository.findOverlapping(any(), any(), any())).thenReturn(List.of());
+        assertThatThrownBy(() -> bookingService.create(customer, 10L,
+                LocalDate.now().plusDays(1), LocalDate.now().plusDays(2),
+                "Atlantis", "Somewhere"))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("district");
     }
 
     @Test

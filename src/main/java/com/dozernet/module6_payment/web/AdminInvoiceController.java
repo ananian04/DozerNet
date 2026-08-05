@@ -29,7 +29,7 @@ public class AdminInvoiceController {
     @GetMapping("/admin/invoices")
     public String list(Model model) {
         model.addAttribute("invoices", paymentService.allInvoices());
-        model.addAttribute("pendingInvoices", paymentService.completedBookingsWithoutInvoice());
+        model.addAttribute("pendingInvoices", paymentService.bookingsWithoutInvoice());
         return "payment/admin-invoices";
     }
 

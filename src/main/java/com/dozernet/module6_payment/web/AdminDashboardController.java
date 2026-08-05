@@ -20,6 +20,8 @@ public class AdminDashboardController {
     @GetMapping("/admin/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("stats", adminService.dashboard());
+        model.addAttribute("deployments", adminService.fleetWhereabouts());
+        model.addAttribute("awaitingOperator", adminService.paidAwaitingOperator());
         return "admin/dashboard";
     }
 }

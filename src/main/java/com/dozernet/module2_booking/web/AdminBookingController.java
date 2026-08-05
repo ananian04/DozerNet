@@ -36,7 +36,7 @@ public class AdminBookingController {
     public String approve(@PathVariable Long id, RedirectAttributes ra) {
         try {
             bookingService.approve(id);
-            ra.addFlashAttribute("success", "Booking approved.");
+            ra.addFlashAttribute("success", "Booking approved. Invoice issued — customer notified to pay.");
         } catch (BusinessRuleException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }

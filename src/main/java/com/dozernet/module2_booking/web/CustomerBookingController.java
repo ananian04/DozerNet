@@ -2,9 +2,11 @@ package com.dozernet.module2_booking.web;
 
 import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.security.CurrentUserService;
+import com.dozernet.module2_booking.SriLankaDistricts;
 import com.dozernet.module2_booking.dto.BookingForm;
 import com.dozernet.module2_booking.service.BookingService;
 import com.dozernet.module3_fleet.service.FleetService;
+import com.dozernet.module6_payment.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,13 +26,16 @@ public class CustomerBookingController {
     private final BookingService bookingService;
     private final FleetService fleetService;
     private final CurrentUserService currentUserService;
+    private final PaymentService paymentService;
 
     public CustomerBookingController(BookingService bookingService,
                                      FleetService fleetService,
-                                     CurrentUserService currentUserService) {
+                                     CurrentUserService currentUserService,
+                                     PaymentService paymentService) {
         this.bookingService = bookingService;
         this.fleetService = fleetService;
         this.currentUserService = currentUserService;
+        this.paymentService = paymentService;
     }
 
     @GetMapping("/bookings/new/{machineId}")
@@ -39,6 +44,7 @@ public class CustomerBookingController {
             model.addAttribute("bookingForm", new BookingForm());
         }
         model.addAttribute("machine", fleetService.getById(machineId));
+        model.addAttribute("districts", SriLankaDistricts.ALL);
         return "booking/new";
     }
 
@@ -48,15 +54,18 @@ public class CustomerBookingController {
                          BindingResult binding, Model model, RedirectAttributes ra) {
         if (binding.hasErrors()) {
             model.addAttribute("machine", fleetService.getById(machineId));
+            model.addAttribute("districts", SriLankaDistricts.ALL);
             return "booking/new";
         }
         try {
             bookingService.create(currentUserService.require(), machineId,
-                    form.getStartDate(), form.getEndDate());
+                    form.getStartDate(), form.getEndDate(),
+                    form.getJobSiteDistrict(), form.getJobSiteAddress());
             ra.addFlashAttribute("success", "Booking request submitted. You will be notified once it is reviewed.");
             return "redirect:/customer/bookings";
         } catch (BusinessRuleException ex) {
             model.addAttribute("machine", fleetService.getById(machineId));
+            model.addAttribute("districts", SriLankaDistricts.ALL);
             model.addAttribute("error", ex.getMessage());
             return "booking/new";
         }
@@ -64,7 +73,9 @@ public class CustomerBookingController {
 
     @GetMapping("/customer/bookings")
     public String myBookings(Model model) {
-        model.addAttribute("bookings", bookingService.forCustomer(currentUserService.require()));
+        var customer = currentUserService.require();
+        model.addAttribute("bookings", bookingService.forCustomer(customer));
+        model.addAttribute("unpaidInvoices", paymentService.unpaidInvoiceIdsByBooking(customer));
         return "booking/my-bookings";
     }
 

@@ -48,12 +48,16 @@ class BookingRepositoryTest {
         Booking existing = new Booking(customer, machine, base, base.plusDays(5));
         existing.setStatus(BookingStatus.APPROVED);
         existing.setTotalAmount(new BigDecimal("60000.00"));
+        existing.setJobSiteDistrict("Colombo");
+        existing.setJobSiteAddress("Test site A");
         em.persist(existing);
 
         // A cancelled booking that must NOT block
         Booking cancelled = new Booking(customer, machine, base.plusDays(20), base.plusDays(22));
         cancelled.setStatus(BookingStatus.CANCELLED);
         cancelled.setTotalAmount(new BigDecimal("30000.00"));
+        cancelled.setJobSiteDistrict("Gampaha");
+        cancelled.setJobSiteAddress("Test site B");
         em.persist(cancelled);
 
         em.flush();

@@ -1,5 +1,6 @@
 package com.dozernet.module6_payment.service;
 
+import com.dozernet.module2_booking.entity.Booking;
 import com.dozernet.module2_booking.entity.BookingStatus;
 import com.dozernet.module2_booking.service.BookingService;
 import com.dozernet.module3_fleet.service.FleetService;
@@ -41,6 +42,7 @@ public class AdminService {
 
     public record DashboardStats(long pendingBookings, long pendingListings, long pendingOperators,
                                  long totalMachines, long scheduledMaintenance, long unpaidInvoices,
+                                 long awaitingOperatorAssignment,
                                  BigDecimal revenueCollected, BigDecimal outstanding) {
     }
 
@@ -64,8 +66,19 @@ public class AdminService {
                 fleetService.findAll().size(),
                 maintenanceService.countScheduled(),
                 unpaid,
+                operatorService.countPaidAwaitingOperator(),
                 collected,
                 outstanding);
+    }
+
+    /** Paid bookings still waiting for an operator — for the dashboard alert. */
+    public List<Booking> paidAwaitingOperator() {
+        return operatorService.paidBookingsAwaitingOperator();
+    }
+
+    /** Machines currently out on approved rentals that include today. */
+    public List<Booking> fleetWhereabouts() {
+        return bookingService.activeDeploymentsToday();
     }
 
     public RevenueReport revenueReport() {

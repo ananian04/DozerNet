@@ -33,6 +33,29 @@
                     <div class="field-error" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
                 </div>
             </div>
+
+            <div class="field" style="margin-top:var(--space-3)">
+                <label>Where will this machine work?</label>
+                <p class="muted" style="margin:.25rem 0 var(--space-2)">Pick the district, then add the site landmark or road.</p>
+                <input type="hidden" id="jobSiteDistrict" th:field="*{jobSiteDistrict}"/>
+                <div class="job-filter district-chips" role="group" aria-label="Job site district">
+                    <button type="button" class="job-filter-chip district-chip"
+                            th:each="d : ${districts}"
+                            th:text="${d}"
+                            th:attr="data-district=${d},aria-pressed=${bookingForm.jobSiteDistrict == d}"
+                            th:classappend="${bookingForm.jobSiteDistrict == d} ? ' is-active'">District</button>
+                </div>
+                <div class="field-error" th:if="${#fields.hasErrors('jobSiteDistrict')}" th:errors="*{jobSiteDistrict}"></div>
+            </div>
+
+            <div class="field">
+                <label for="jobSiteAddress">Site address / landmark</label>
+                <textarea class="textarea" id="jobSiteAddress" rows="2"
+                          th:field="*{jobSiteAddress}"
+                          placeholder="e.g. Near Kaduwela flyover, site gate B"></textarea>
+                <div class="field-error" th:if="${#fields.hasErrors('jobSiteAddress')}" th:errors="*{jobSiteAddress}"></div>
+            </div>
+
             <p class="muted" id="estimate" style="display:none">Estimated total: <strong id="estimateValue"></strong></p>
             <button class="btn btn-primary" type="submit">Request booking</button>
         </form>
@@ -65,6 +88,21 @@
         }
         start.addEventListener('change', recalc);
         end.addEventListener('change', recalc);
+        recalc();
+
+        const districtInput = document.getElementById('jobSiteDistrict');
+        const chips = document.querySelectorAll('.district-chip');
+        chips.forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                const value = chip.getAttribute('data-district');
+                districtInput.value = value;
+                chips.forEach(function (c) {
+                    const on = c === chip;
+                    c.classList.toggle('is-active', on);
+                    c.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+            });
+        });
     })();
 </script>
 </body>

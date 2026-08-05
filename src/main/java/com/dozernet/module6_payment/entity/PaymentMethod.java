@@ -1,11 +1,12 @@
 package com.dozernet.module6_payment.entity;
 
 /**
- * Supported offline payment methods (no online gateway in this phase).
+ * Payment methods. CARD is a demo online portal method (no real gateway).
  */
 public enum PaymentMethod {
     CASH("Cash"),
-    BANK_TRANSFER("Bank transfer");
+    BANK_TRANSFER("Bank transfer"),
+    CARD("Card (demo)");
 
     private final String displayName;
 

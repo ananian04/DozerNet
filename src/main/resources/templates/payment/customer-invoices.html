@@ -31,8 +31,14 @@
                         <span th:text="${#numbers.formatDecimal(inv.amount,1,'COMMA',2,'POINT')}">0</span></td>
                     <td><span th:text="${currencySymbol}">Rs.</span>
                         <span th:text="${#numbers.formatDecimal(inv.balance,1,'COMMA',2,'POINT')}">0</span></td>
-                    <td><span class="pill" th:text="${inv.status}">UNPAID</span></td>
-                    <td><a class="btn btn-ghost btn-sm" th:href="@{'/customer/invoices/' + ${inv.id}}">View</a></td>
+                    <td><span class="pill" th:classappend="${'pill-' + inv.status.name().toLowerCase()}"
+                              th:text="${inv.status.displayName}">UNPAID</span></td>
+                    <td style="display:flex;gap:.35rem;flex-wrap:wrap">
+                        <a class="btn btn-primary btn-sm"
+                           th:if="${inv.status.name() != 'PAID'}"
+                           th:href="@{'/customer/invoices/' + ${inv.id} + '/pay'}">Pay now</a>
+                        <a class="btn btn-ghost btn-sm" th:href="@{'/customer/invoices/' + ${inv.id}}">View</a>
+                    </td>
                 </tr>
                 </tbody>
             </table>

@@ -16,6 +16,7 @@ import com.dozernet.module4_operator.entity.JobStatus;
 import com.dozernet.module4_operator.entity.OperatorProfile;
 import com.dozernet.module4_operator.repository.AssignmentRepository;
 import com.dozernet.module4_operator.repository.OperatorProfileRepository;
+import com.dozernet.module6_payment.service.PaymentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,8 +24,8 @@ import java.util.List;
 
 /**
  * Operator Management: company operator setup, independent driver registration
- * and verification, assigning operators to approved bookings, and job-status
- * updates.
+ * and verification, assigning operators to approved (and paid) bookings, and
+ * job-status updates.
  */
 @Service
 public class OperatorService {
@@ -34,17 +35,20 @@ public class OperatorService {
     private final AccountService accountService;
     private final BookingService bookingService;
     private final NotificationService notificationService;
+    private final PaymentService paymentService;
 
     public OperatorService(OperatorProfileRepository profileRepository,
                            AssignmentRepository assignmentRepository,
                            AccountService accountService,
                            BookingService bookingService,
-                           NotificationService notificationService) {
+                           NotificationService notificationService,
+                           PaymentService paymentService) {
         this.profileRepository = profileRepository;
         this.assignmentRepository = assignmentRepository;
         this.accountService = accountService;
         this.bookingService = bookingService;
         this.notificationService = notificationService;
+        this.paymentService = paymentService;
     }
 
     // ---------- Registration ----------
@@ -84,6 +88,10 @@ public class OperatorService {
         Booking booking = bookingService.getById(bookingId);
         if (booking.getStatus() != BookingStatus.APPROVED) {
             throw new BusinessRuleException("Operators can only be assigned to approved bookings.");
+        }
+        if (!paymentService.isInvoicePaidForBooking(booking)) {
+            throw new BusinessRuleException(
+                    "Customer must pay the invoice before an operator can be assigned.");
         }
         if (assignmentRepository.existsByBooking(booking)) {
             throw new BusinessRuleException("This booking already has an operator assigned.");
@@ -159,6 +167,17 @@ public class OperatorService {
         return bookingService.approvedBookings().stream()
                 .filter(b -> !assignmentRepository.existsByBooking(b))
                 .toList();
+    }
+
+    /** Paid bookings that are ready for operator assignment. */
+    public List<Booking> paidBookingsAwaitingOperator() {
+        return unassignedApprovedBookings().stream()
+                .filter(paymentService::isInvoicePaidForBooking)
+                .toList();
+    }
+
+    public long countPaidAwaitingOperator() {
+        return paidBookingsAwaitingOperator().size();
     }
 
     private OperatorProfile getProfile(Long id) {

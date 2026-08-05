@@ -5,6 +5,7 @@ import com.dozernet.common.security.CurrentUserService;
 import com.dozernet.common.user.User;
 import com.dozernet.module1_customer.dto.ProfileForm;
 import com.dozernet.module1_customer.service.CustomerService;
+import com.dozernet.module6_payment.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,16 +27,21 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final CurrentUserService currentUserService;
+    private final PaymentService paymentService;
 
     public CustomerController(CustomerService customerService,
-                              CurrentUserService currentUserService) {
+                              CurrentUserService currentUserService,
+                              PaymentService paymentService) {
         this.customerService = customerService;
         this.currentUserService = currentUserService;
+        this.paymentService = paymentService;
     }
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("user", currentUserService.require());
+        User user = currentUserService.require();
+        model.addAttribute("user", user);
+        model.addAttribute("unpaidCount", paymentService.countUnpaidForCustomer(user));
         return "customer/dashboard";
     }
 

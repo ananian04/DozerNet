@@ -15,6 +15,13 @@
             <a class="btn btn-ghost" th:href="@{/admin/operators}">Operators</a>
         </div>
 
+        <div class="alert alert-success" th:if="${readyToAssign != null and !#lists.isEmpty(readyToAssign)}">
+            <strong>Payment completed — assign an operator.</strong>
+            <span th:text="${#lists.size(readyToAssign)}">1</span>
+            paid booking(s) are ready. Use the form below for rows marked
+            <span class="pill pill-completed">Paid</span>.
+        </div>
+
         <p class="muted" th:if="${#lists.isEmpty(bookings)}">No approved bookings need an operator right now.</p>
         <div class="alert alert-info" th:if="${!#lists.isEmpty(bookings) and #lists.isEmpty(operators)}">
             There are no verified operators yet. Add or verify an operator first.
@@ -23,7 +30,7 @@
         <div class="table-wrap" th:unless="${#lists.isEmpty(bookings)}">
             <table class="data">
                 <thead>
-                <tr><th>Customer</th><th>Machine</th><th>Dates</th><th>Assign operator</th></tr>
+                <tr><th>Customer</th><th>Machine</th><th>Dates</th><th>Payment</th><th>Assign operator</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="b : ${bookings}">
@@ -31,15 +38,25 @@
                     <td th:text="${b.machine.model}">Machine</td>
                     <td><span th:text="${b.startDate}">start</span> &rarr; <span th:text="${b.endDate}">end</span></td>
                     <td>
-                        <form th:action="@{/admin/assignments/assign}" method="post" style="display:flex;gap:.3rem">
-                            <input type="hidden" name="bookingId" th:value="${b.id}"/>
-                            <select class="select" name="operatorId" style="padding:.35rem .5rem" required>
-                                <option value="" disabled selected>Select operator</option>
-                                <option th:each="o : ${operators}" th:value="${o.user.id}"
-                                        th:text="${o.user.fullName} + ' (' + ${o.experienceYears} + ' yr)'"></option>
-                            </select>
-                            <button class="btn btn-primary btn-sm" type="submit" th:disabled="${#lists.isEmpty(operators)}">Assign</button>
-                        </form>
+                        <span class="pill"
+                              th:classappend="${paymentLabels.get(b.id) == 'Paid'} ? ' pill-completed' : ' pill-pending'"
+                              th:text="${paymentLabels.get(b.id)}">Unpaid</span>
+                    </td>
+                    <td>
+                        <th:block th:if="${paymentLabels.get(b.id) == 'Paid'}">
+                            <form th:action="@{/admin/assignments/assign}" method="post" style="display:flex;gap:.3rem">
+                                <input type="hidden" name="bookingId" th:value="${b.id}"/>
+                                <select class="select" name="operatorId" style="padding:.35rem .5rem" required>
+                                    <option value="" disabled selected>Select operator</option>
+                                    <option th:each="o : ${operators}" th:value="${o.user.id}"
+                                            th:text="${o.user.fullName} + ' (' + ${o.experienceYears} + ' yr)'"></option>
+                                </select>
+                                <button class="btn btn-primary btn-sm" type="submit" th:disabled="${#lists.isEmpty(operators)}">Assign</button>
+                            </form>
+                        </th:block>
+                        <span class="muted" th:unless="${paymentLabels.get(b.id) == 'Paid'}">
+                            Waiting for customer payment
+                        </span>
                     </td>
                 </tr>
                 </tbody>

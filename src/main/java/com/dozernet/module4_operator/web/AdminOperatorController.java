@@ -6,6 +6,7 @@ import com.dozernet.common.user.User;
 import com.dozernet.common.user.UserRepository;
 import com.dozernet.module4_operator.dto.CompanyOperatorForm;
 import com.dozernet.module4_operator.service.OperatorService;
+import com.dozernet.module6_payment.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,11 +27,14 @@ public class AdminOperatorController {
 
     private final OperatorService operatorService;
     private final UserRepository userRepository;
+    private final PaymentService paymentService;
 
     public AdminOperatorController(OperatorService operatorService,
-                                   UserRepository userRepository) {
+                                   UserRepository userRepository,
+                                   PaymentService paymentService) {
         this.operatorService = operatorService;
         this.userRepository = userRepository;
+        this.paymentService = paymentService;
     }
 
     // ---------- Operator list + add ----------
@@ -73,8 +77,12 @@ public class AdminOperatorController {
 
     @GetMapping("/admin/assignments")
     public String assignments(Model model) {
-        model.addAttribute("bookings", operatorService.unassignedApprovedBookings());
+        var bookings = operatorService.unassignedApprovedBookings();
+        var ready = operatorService.paidBookingsAwaitingOperator();
+        model.addAttribute("bookings", bookings);
+        model.addAttribute("readyToAssign", ready);
         model.addAttribute("operators", operatorService.verifiedOperators());
+        model.addAttribute("paymentLabels", paymentService.paymentLabelsForBookings(bookings));
         return "operator/admin-assignments";
     }
 

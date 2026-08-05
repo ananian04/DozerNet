@@ -68,4 +68,19 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findOverlapping(@Param("machine") Machine machine,
                                   @Param("start") LocalDate start,
                                   @Param("end") LocalDate end);
+
+    /**
+     * Approved bookings whose rental window includes {@code date} — machines
+     * currently (or scheduled to be) out on a job site that day.
+     */
+    @Query("""
+            select b from Booking b
+            join fetch b.machine
+            join fetch b.customer
+            where b.status = com.dozernet.module2_booking.entity.BookingStatus.APPROVED
+              and b.startDate <= :date
+              and b.endDate   >= :date
+            order by b.jobSiteDistrict asc, b.machine.model asc
+            """)
+    List<Booking> findActiveDeploymentsOn(@Param("date") LocalDate date);
 }

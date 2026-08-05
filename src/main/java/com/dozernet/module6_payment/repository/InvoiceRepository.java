@@ -43,5 +43,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     boolean existsByBooking(Booking booking);
 
+    Optional<Invoice> findByBooking(Booking booking);
+
     long countByStatus(InvoiceStatus status);
+
+    long countByCustomerAndStatusNot(User customer, InvoiceStatus status);
 }
