@@ -34,7 +34,9 @@
                     <td><span th:text="${currencySymbol}">Rs.</span> <span th:text="${#numbers.formatDecimal(b.totalAmount,1,'COMMA',2,'POINT')}">0</span></td>
                     <td><span class="pill" th:classappend="${'pill-' + b.status.name().toLowerCase()}" th:text="${b.status.displayName}">Status</span></td>
                     <td>
-                        <form th:if="${b.status.name() == 'PENDING'}" th:action="@{'/bookings/' + ${b.id} + '/cancel'}" method="post"
+                        <form th:if="${b.status.name() == 'PENDING'
+                                      or (b.status.name() == 'APPROVED' and unpaidInvoices != null and unpaidInvoices.containsKey(b.id))}"
+                              th:action="@{'/bookings/' + ${b.id} + '/cancel'}" method="post"
                               onsubmit="return confirm('Cancel this booking?')">
                             <button class="btn btn-danger btn-sm" type="submit">Cancel</button>
                         </form>

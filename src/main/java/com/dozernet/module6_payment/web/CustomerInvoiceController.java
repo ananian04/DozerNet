@@ -1,6 +1,7 @@
 package com.dozernet.module6_payment.web;
 
 import com.dozernet.common.exception.BusinessRuleException;
+import com.dozernet.common.exception.ResourceNotFoundException;
 import com.dozernet.common.security.CurrentUserService;
 import com.dozernet.common.user.User;
 import com.dozernet.module6_payment.entity.Invoice;
@@ -50,6 +51,9 @@ public class CustomerInvoiceController {
         if (invoice.getStatus() == InvoiceStatus.PAID) {
             return "redirect:/customer/invoices/" + id + "/thank-you";
         }
+        if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
+            throw new BusinessRuleException("This invoice was cancelled and cannot be paid.");
+        }
         model.addAttribute("invoice", invoice);
         return "payment/customer-pay";
     }
@@ -73,6 +77,9 @@ public class CustomerInvoiceController {
     @GetMapping("/customer/invoices/{id}/thank-you")
     public String thankYou(@PathVariable Long id, Model model) {
         Invoice invoice = requireOwnInvoice(id);
+        if (invoice.getStatus() != InvoiceStatus.PAID) {
+            return "redirect:/customer/invoices/" + id;
+        }
         model.addAttribute("invoice", invoice);
         model.addAttribute("payments", paymentService.paymentsFor(invoice));
         return "payment/customer-thank-you";
@@ -82,7 +89,7 @@ public class CustomerInvoiceController {
         User customer = currentUserService.require();
         Invoice invoice = paymentService.getInvoice(id);
         if (!invoice.getCustomer().getId().equals(customer.getId())) {
-            throw new BusinessRuleException("You can only view your own invoices.");
+            throw ResourceNotFoundException.of("Invoice", id);
         }
         return invoice;
     }

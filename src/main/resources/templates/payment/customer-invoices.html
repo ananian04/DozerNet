@@ -35,7 +35,7 @@
                               th:text="${inv.status.displayName}">UNPAID</span></td>
                     <td style="display:flex;gap:.35rem;flex-wrap:wrap">
                         <a class="btn btn-primary btn-sm"
-                           th:if="${inv.status.name() != 'PAID'}"
+                           th:if="${inv.status.name() == 'UNPAID' or inv.status.name() == 'PARTIALLY_PAID'}"
                            th:href="@{'/customer/invoices/' + ${inv.id} + '/pay'}">Pay now</a>
                         <a class="btn btn-ghost btn-sm" th:href="@{'/customer/invoices/' + ${inv.id}}">View</a>
                     </td>

@@ -14,7 +14,7 @@
             </div>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap">
                 <a class="btn btn-primary"
-                   th:if="${invoice.status.name() != 'PAID'}"
+                   th:if="${invoice.status.name() == 'UNPAID' or invoice.status.name() == 'PARTIALLY_PAID'}"
                    th:href="@{'/customer/invoices/' + ${invoice.id} + '/pay'}">Pay now</a>
                 <a class="btn btn-ghost" th:href="@{/customer/invoices}">Back</a>
             </div>

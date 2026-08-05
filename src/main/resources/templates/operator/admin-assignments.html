@@ -10,7 +10,7 @@
         <div class="page-head">
             <div>
                 <p class="eyebrow">Admin &middot; Assignments</p>
-                <h1>Approved bookings awaiting an operator</h1>
+                <h1>Paid bookings ready for an operator</h1>
             </div>
             <a class="btn btn-ghost" th:href="@{/admin/operators}">Operators</a>
         </div>
@@ -18,11 +18,10 @@
         <div class="alert alert-success" th:if="${readyToAssign != null and !#lists.isEmpty(readyToAssign)}">
             <strong>Payment completed — assign an operator.</strong>
             <span th:text="${#lists.size(readyToAssign)}">1</span>
-            paid booking(s) are ready. Use the form below for rows marked
-            <span class="pill pill-completed">Paid</span>.
+            paid booking(s) are ready.
         </div>
 
-        <p class="muted" th:if="${#lists.isEmpty(bookings)}">No approved bookings need an operator right now.</p>
+        <p class="muted" th:if="${#lists.isEmpty(bookings)}">No paid bookings are waiting for an operator right now.</p>
         <div class="alert alert-info" th:if="${!#lists.isEmpty(bookings) and #lists.isEmpty(operators)}">
             There are no verified operators yet. Add or verify an operator first.
         </div>

@@ -121,11 +121,43 @@ public class BookingService {
         if (!b.getCustomer().getId().equals(customer.getId())) {
             throw new BusinessRuleException("You can only cancel your own bookings.");
         }
-        if (b.getStatus() != BookingStatus.PENDING) {
-            throw new BusinessRuleException("Only pending bookings can be cancelled (before approval).");
+        cancelInternal(b, "Your booking for " + b.getMachine().getModel() + " was cancelled.");
+    }
+
+    /**
+     * Admin cancels an approved booking that has not been paid yet, freeing the
+     * calendar so the machine can be booked again.
+     */
+    @Transactional
+    public void cancelUnpaidApproved(Long bookingId) {
+        Booking b = getById(bookingId);
+        if (b.getStatus() != BookingStatus.APPROVED) {
+            throw new BusinessRuleException("Only approved bookings can be cancelled this way.");
         }
-        b.setStatus(BookingStatus.CANCELLED);
-        bookingRepository.save(b);
+        if (paymentService.isInvoicePaidForBooking(b)) {
+            throw new BusinessRuleException("Paid bookings cannot be cancelled. Contact support if needed.");
+        }
+        cancelInternal(b, "Your approved booking for " + b.getMachine().getModel()
+                + " was cancelled by the administrator. The invoice is no longer due.");
+    }
+
+    private void cancelInternal(Booking b, String customerMessage) {
+        if (b.getStatus() == BookingStatus.PENDING) {
+            b.setStatus(BookingStatus.CANCELLED);
+            bookingRepository.save(b);
+            return;
+        }
+        if (b.getStatus() == BookingStatus.APPROVED) {
+            if (paymentService.isInvoicePaidForBooking(b)) {
+                throw new BusinessRuleException("Paid bookings cannot be cancelled.");
+            }
+            paymentService.voidUnpaidInvoiceForBooking(b);
+            b.setStatus(BookingStatus.CANCELLED);
+            bookingRepository.save(b);
+            notificationService.notify(b.getCustomer(), "Booking cancelled", customerMessage);
+            return;
+        }
+        throw new BusinessRuleException("Only pending or unpaid approved bookings can be cancelled.");
     }
 
     @Transactional

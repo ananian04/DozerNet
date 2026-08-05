@@ -77,10 +77,9 @@ public class AdminOperatorController {
 
     @GetMapping("/admin/assignments")
     public String assignments(Model model) {
-        var bookings = operatorService.unassignedApprovedBookings();
-        var ready = operatorService.paidBookingsAwaitingOperator();
+        var bookings = operatorService.paidBookingsAwaitingOperator();
         model.addAttribute("bookings", bookings);
-        model.addAttribute("readyToAssign", ready);
+        model.addAttribute("readyToAssign", bookings);
         model.addAttribute("operators", operatorService.verifiedOperators());
         model.addAttribute("paymentLabels", paymentService.paymentLabelsForBookings(bookings));
         return "operator/admin-assignments";

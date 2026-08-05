@@ -35,7 +35,7 @@ public class Booking extends BaseEntity {
     private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 32)
     private BookingStatus status = BookingStatus.PENDING;
 
     /** Snapshot of the total price at booking time (days * daily rate). */

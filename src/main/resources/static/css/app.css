@@ -602,6 +602,7 @@ button.district-chip:focus-visible {
 .pill-unpaid { background: #fff4d6; color: #9a6a00; }
 .pill-partially_paid { background: #fff4d6; color: #9a6a00; }
 .pill-paid { background: #e7f6ec; color: var(--success); }
+.pill-cancelled { background: #fde8e9; color: var(--danger); }
 
 .pay-portal .field { margin-bottom: var(--space-3); }
 .thank-you-card h1 { margin-top: .25rem; }

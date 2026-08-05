@@ -42,7 +42,7 @@
                     <td th:text="${b.days}">1</td>
                     <td><span th:text="${currencySymbol}">Rs.</span> <span th:text="${#numbers.formatDecimal(b.totalAmount,1,'COMMA',2,'POINT')}">0</span></td>
                     <td><span class="pill" th:classappend="${'pill-' + b.status.name().toLowerCase()}" th:text="${b.status.displayName}">Status</span></td>
-                    <td style="display:flex;gap:.4rem">
+                    <td style="display:flex;gap:.4rem;flex-wrap:wrap">
                         <th:block th:if="${b.status.name() == 'PENDING'}">
                             <form th:action="@{'/admin/bookings/' + ${b.id} + '/approve'}" method="post">
                                 <button class="btn btn-primary btn-sm" type="submit">Approve</button>
@@ -51,7 +51,14 @@
                                 <button class="btn btn-danger btn-sm" type="submit">Reject</button>
                             </form>
                         </th:block>
-                        <span class="muted" th:unless="${b.status.name() == 'PENDING'}">&mdash;</span>
+                        <form th:if="${cancellableUnpaid != null and cancellableUnpaid.contains(b.id)}"
+                              th:action="@{'/admin/bookings/' + ${b.id} + '/cancel'}" method="post"
+                              onsubmit="return confirm('Cancel this unpaid approved booking and free the dates?')">
+                            <button class="btn btn-danger btn-sm" type="submit">Cancel unpaid</button>
+                        </form>
+                        <span class="muted"
+                              th:if="${b.status.name() != 'PENDING'
+                                       and (cancellableUnpaid == null or !cancellableUnpaid.contains(b.id))}">&mdash;</span>
                     </td>
                 </tr>
                 </tbody>

@@ -55,9 +55,13 @@ public class AdminService {
         List<Invoice> invoices = paymentService.allInvoices();
         BigDecimal collected = invoices.stream().map(Invoice::getAmountPaid)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal outstanding = invoices.stream().map(Invoice::getBalance)
+        BigDecimal outstanding = invoices.stream()
+                .filter(i -> i.getStatus() != InvoiceStatus.CANCELLED)
+                .map(Invoice::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        long unpaid = invoices.stream().filter(i -> i.getStatus() != InvoiceStatus.PAID).count();
+        long unpaid = invoices.stream()
+                .filter(i -> i.getStatus() == InvoiceStatus.UNPAID || i.getStatus() == InvoiceStatus.PARTIALLY_PAID)
+                .count();
 
         return new DashboardStats(
                 bookingService.countByStatus(BookingStatus.PENDING),

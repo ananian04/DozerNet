@@ -40,7 +40,7 @@ public class Invoice extends BaseEntity {
     private LocalDate issuedDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 32)
     private InvoiceStatus status = InvoiceStatus.UNPAID;
 
     public Invoice() {

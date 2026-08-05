@@ -4,6 +4,7 @@ import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.exception.ResourceNotFoundException;
 import com.dozernet.common.notification.NotificationService;
 import com.dozernet.common.user.User;
+import com.dozernet.module2_booking.repository.BookingRepository;
 import com.dozernet.module3_fleet.dto.MachineForm;
 import com.dozernet.module3_fleet.entity.Machine;
 import com.dozernet.module3_fleet.entity.MachineStatus;
@@ -24,11 +25,14 @@ import java.util.List;
 public class FleetService {
 
     private final MachineRepository machineRepository;
+    private final BookingRepository bookingRepository;
     private final NotificationService notificationService;
 
     public FleetService(MachineRepository machineRepository,
+                        BookingRepository bookingRepository,
                         NotificationService notificationService) {
         this.machineRepository = machineRepository;
+        this.bookingRepository = bookingRepository;
         this.notificationService = notificationService;
     }
 
@@ -49,20 +53,31 @@ public class FleetService {
     }
 
     public List<Machine> findAll() {
-        return machineRepository.findAll();
+        return machineRepository.findAllWithOwner();
     }
 
     public List<Machine> findByOwner(User owner) {
-        return machineRepository.findByOwner(owner);
+        return machineRepository.findByOwnerWithOwner(owner);
     }
 
     public List<Machine> pendingApprovals() {
-        return machineRepository.findByVerifiedFalse();
+        return machineRepository.findUnverifiedWithOwner();
     }
 
     public Machine getById(Long id) {
-        return machineRepository.findById(id)
+        return machineRepository.findByIdWithOwner(id)
+                .or(() -> machineRepository.findById(id))
                 .orElseThrow(() -> ResourceNotFoundException.of("Machine", id));
+    }
+
+    /** Ensures the machine belongs to the owner (safe with open-in-view=false). */
+    @Transactional(readOnly = true)
+    public Machine requireOwnedBy(Long id, User owner) {
+        Machine m = getById(id);
+        if (m.getOwner() == null || !m.getOwner().getId().equals(owner.getId())) {
+            throw new BusinessRuleException("You can only manage your own machine listings.");
+        }
+        return m;
     }
 
     // ---------- Create / update / delete ----------
@@ -106,6 +121,10 @@ public class FleetService {
     @Transactional
     public void delete(Long id) {
         Machine m = getById(id);
+        if (bookingRepository.existsByMachine(m)) {
+            throw new BusinessRuleException(
+                    "Cannot delete a machine that has bookings. Mark it unavailable instead.");
+        }
         machineRepository.delete(m);
     }
 
@@ -125,6 +144,9 @@ public class FleetService {
     @Transactional
     public void rejectListing(Long id) {
         Machine m = getById(id);
+        if (bookingRepository.existsByMachine(m)) {
+            throw new BusinessRuleException("Cannot reject/delete a listing that already has bookings.");
+        }
         User owner = m.getOwner();
         String model = m.getModel();
         machineRepository.delete(m);

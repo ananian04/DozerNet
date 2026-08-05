@@ -70,8 +70,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                   @Param("end") LocalDate end);
 
     /**
-     * Approved bookings whose rental window includes {@code date} — machines
-     * currently (or scheduled to be) out on a job site that day.
+     * Approved bookings with a paid invoice whose rental window includes {@code date}.
+     * Unpaid approvals are not treated as machines on site.
      */
     @Query("""
             select b from Booking b
@@ -80,6 +80,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             where b.status = com.dozernet.module2_booking.entity.BookingStatus.APPROVED
               and b.startDate <= :date
               and b.endDate   >= :date
+              and exists (
+                  select i from Invoice i
+                  where i.booking = b
+                    and i.status = com.dozernet.module6_payment.entity.InvoiceStatus.PAID
+              )
             order by b.jobSiteDistrict asc, b.machine.model asc
             """)
     List<Booking> findActiveDeploymentsOn(@Param("date") LocalDate date);

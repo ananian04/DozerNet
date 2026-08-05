@@ -16,6 +16,36 @@ import java.util.List;
  */
 public interface MachineRepository extends JpaRepository<Machine, Long> {
 
+    @Query("""
+            select m from Machine m
+            left join fetch m.owner
+            order by m.model asc
+            """)
+    List<Machine> findAllWithOwner();
+
+    @Query("""
+            select m from Machine m
+            left join fetch m.owner
+            where m.owner = :owner
+            order by m.model asc
+            """)
+    List<Machine> findByOwnerWithOwner(@Param("owner") User owner);
+
+    @Query("""
+            select m from Machine m
+            left join fetch m.owner
+            where m.verified = false
+            order by m.createdAt desc
+            """)
+    List<Machine> findUnverifiedWithOwner();
+
+    @Query("""
+            select m from Machine m
+            left join fetch m.owner
+            where m.id = :id
+            """)
+    java.util.Optional<Machine> findByIdWithOwner(@Param("id") Long id);
+
     List<Machine> findByOwner(User owner);
 
     List<Machine> findByVerifiedFalse();

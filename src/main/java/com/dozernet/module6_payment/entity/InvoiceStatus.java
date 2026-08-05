@@ -3,7 +3,8 @@ package com.dozernet.module6_payment.entity;
 public enum InvoiceStatus {
     UNPAID("Unpaid"),
     PARTIALLY_PAID("Partially paid"),
-    PAID("Paid");
+    PAID("Paid"),
+    CANCELLED("Cancelled");
 
     private final String displayName;
 

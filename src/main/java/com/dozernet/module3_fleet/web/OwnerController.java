@@ -106,8 +106,7 @@ public class OwnerController {
 
     @GetMapping("/owner/machines/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        Machine m = fleetService.getById(id);
-        requireOwnership(m);
+        Machine m = fleetService.requireOwnedBy(id, currentUserService.require());
         if (!model.containsAttribute("machineForm")) {
             model.addAttribute("machineForm", MachineForm.from(m));
         }
@@ -121,7 +120,7 @@ public class OwnerController {
     public String update(@PathVariable Long id,
                          @Valid @ModelAttribute("machineForm") MachineForm form,
                          BindingResult binding, Model model, RedirectAttributes ra) {
-        requireOwnership(fleetService.getById(id));
+        fleetService.requireOwnedBy(id, currentUserService.require());
         if (binding.hasErrors()) {
             model.addAttribute("types", MachineType.values());
             model.addAttribute("mode", "edit");
@@ -139,17 +138,13 @@ public class OwnerController {
 
     @PostMapping("/owner/machines/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
-        requireOwnership(fleetService.getById(id));
-        fleetService.delete(id);
-        ra.addFlashAttribute("success", "Listing removed.");
-        return "redirect:/owner/dashboard";
-    }
-
-    /** Guard: an owner may only touch their own machines. */
-    private void requireOwnership(Machine m) {
-        User current = currentUserService.require();
-        if (m.getOwner() == null || !m.getOwner().getId().equals(current.getId())) {
-            throw new BusinessRuleException("You can only manage your own listings");
+        try {
+            fleetService.requireOwnedBy(id, currentUserService.require());
+            fleetService.delete(id);
+            ra.addFlashAttribute("success", "Listing removed.");
+        } catch (BusinessRuleException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
         }
+        return "redirect:/owner/dashboard";
     }
 }

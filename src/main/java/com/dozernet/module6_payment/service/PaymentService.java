@@ -121,9 +121,18 @@ public class PaymentService {
 
     @Transactional
     public Payment recordPayment(Long invoiceId, BigDecimal amount, PaymentMethod method, String reference) {
+        return recordPayment(invoiceId, amount, method, reference, true);
+    }
+
+    @Transactional
+    public Payment recordPayment(Long invoiceId, BigDecimal amount, PaymentMethod method, String reference,
+                                 boolean notifyCustomer) {
         Invoice invoice = getInvoice(invoiceId);
         if (invoice.getStatus() == InvoiceStatus.PAID) {
             throw new BusinessRuleException("This invoice is already fully paid.");
+        }
+        if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
+            throw new BusinessRuleException("This invoice was cancelled and cannot accept payments.");
         }
         if (amount == null || amount.signum() <= 0) {
             throw new BusinessRuleException("Payment amount must be greater than zero.");
@@ -138,8 +147,10 @@ public class PaymentService {
         invoice.setStatus(nowPaid ? InvoiceStatus.PAID : InvoiceStatus.PARTIALLY_PAID);
         invoiceRepository.save(invoice);
 
-        notificationService.notify(invoice.getCustomer(), "Payment recorded",
-                "A payment of Rs. " + amount + " was recorded. Outstanding balance: Rs. " + invoice.getBalance() + ".");
+        if (notifyCustomer) {
+            notificationService.notify(invoice.getCustomer(), "Payment recorded",
+                    "A payment of Rs. " + amount + " was recorded. Outstanding balance: Rs. " + invoice.getBalance() + ".");
+        }
 
         if (nowPaid) {
             notifyAdminsToAssignOperator(invoice);
@@ -167,10 +178,13 @@ public class PaymentService {
     public Payment recordCustomerPayment(Long invoiceId, User customer, String cardholderName, String cardLast4) {
         Invoice invoice = getInvoice(invoiceId);
         if (!invoice.getCustomer().getId().equals(customer.getId())) {
-            throw new BusinessRuleException("You can only pay your own invoices.");
+            throw ResourceNotFoundException.of("Invoice", invoiceId);
         }
         if (invoice.getStatus() == InvoiceStatus.PAID) {
             throw new BusinessRuleException("This invoice is already fully paid.");
+        }
+        if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
+            throw new BusinessRuleException("This invoice was cancelled and cannot accept payments.");
         }
         if (cardholderName == null || cardholderName.isBlank()) {
             throw new BusinessRuleException("Enter the cardholder name.");
@@ -181,11 +195,25 @@ public class PaymentService {
 
         BigDecimal balance = invoice.getBalance();
         String reference = "CARD-****" + cardLast4 + " / " + cardholderName.trim();
-        Payment payment = recordPayment(invoiceId, balance, PaymentMethod.CARD, reference);
+        Payment payment = recordPayment(invoiceId, balance, PaymentMethod.CARD, reference, false);
         notificationService.notify(customer, "Payment successful",
                 "Thank you. Your payment of Rs. " + balance + " was received. "
                         + "A confirmation was sent to " + customer.getEmail() + ".");
         return payment;
+    }
+
+    /** Cancels an unpaid invoice when an approved booking is revoked. */
+    @Transactional
+    public void voidUnpaidInvoiceForBooking(Booking booking) {
+        invoiceRepository.findByBooking(booking).ifPresent(inv -> {
+            if (inv.getStatus() == InvoiceStatus.PAID || inv.getStatus() == InvoiceStatus.PARTIALLY_PAID) {
+                throw new BusinessRuleException("Cannot cancel a booking that has already been paid.");
+            }
+            if (inv.getStatus() != InvoiceStatus.CANCELLED) {
+                inv.setStatus(InvoiceStatus.CANCELLED);
+                invoiceRepository.save(inv);
+            }
+        });
     }
 
     // ---------- Reads ----------
@@ -215,14 +243,17 @@ public class PaymentService {
     }
 
     public long countUnpaidForCustomer(User customer) {
-        return invoiceRepository.countByCustomerAndStatusNot(customer, InvoiceStatus.PAID);
+        return invoicesForCustomer(customer).stream()
+                .filter(i -> i.getStatus() == InvoiceStatus.UNPAID
+                        || i.getStatus() == InvoiceStatus.PARTIALLY_PAID)
+                .count();
     }
 
     /** Map bookingId → unpaid invoice id for Pay now buttons. */
     public Map<Long, Long> unpaidInvoiceIdsByBooking(User customer) {
         Map<Long, Long> map = new LinkedHashMap<>();
         for (Invoice inv : invoicesForCustomer(customer)) {
-            if (inv.getStatus() != InvoiceStatus.PAID) {
+            if (inv.getStatus() == InvoiceStatus.UNPAID || inv.getStatus() == InvoiceStatus.PARTIALLY_PAID) {
                 map.putIfAbsent(inv.getBooking().getId(), inv.getId());
             }
         }

@@ -109,6 +109,8 @@ public class AdminFleetController {
         try {
             fleetService.delete(id);
             ra.addFlashAttribute("success", "Machine deleted.");
+        } catch (BusinessRuleException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
         } catch (Exception ex) {
             ra.addFlashAttribute("error", "Could not delete: the machine may have bookings.");
         }
