@@ -6,7 +6,7 @@ infrastructure maintained by the whole team.
 
 | # | Module | Owner | Student ID | Java package | Templates | Branch |
 |---|--------|-------|------------|--------------|-----------|--------|
-| 1 | Customer Management | G. Ananian | IT25102642 | `com.dozernet.module1_customer` | `templates/customer/` | `feature/m1-customer-management` |
+| 1 | Customer Management (incl. customer notifications) | G. Ananian | IT25102642 | `com.dozernet.module1_customer` | `templates/customer/` | `feature/m1-customer-management` |
 | 2 | Booking & Rental Management | Theekshana A.D. | IT25101810 | `com.dozernet.module2_booking` | `templates/booking/` | `feature/m2-booking-rental` |
 | 3 | Fleet (JCB) Management | Jayawardhana A.G.D.L. | IT25100798 | `com.dozernet.module3_fleet` | `templates/fleet/` | `feature/m3-fleet-management` |
 | 4 | Operator Management | Perera M.A.S.A. | IT25103606 | `com.dozernet.module4_operator` | `templates/operator/` | `feature/m4-operator-management` |
@@ -19,11 +19,11 @@ infrastructure maintained by the whole team.
 |------|---------|---------|
 | Security | `common.security` | BCrypt, RBAC, role-based login redirect, current-user helper |
 | Users | `common.user` | Shared `User` entity + repository for all roles |
-| Notifications | `common.notification` | Observer-pattern in-app + email notifications |
+| Notifications (shared publisher) | `common.notification` | Observer-pattern publish pipeline (in-app + email); customer inbox UI is Module 1 |
 | Model | `common.model` | `BaseEntity`, `Role` enum |
 | Validation | `common.validation` | Shared regex patterns (phone, NIC, plate, licence) |
 | Exceptions | `common.exception` | Global handler + domain exceptions |
-| Web | `common.web` | Landing/about pages, login page, notification centre |
+| Web | `common.web` | Landing/about/login pages; admin/owner/operator notification centre |
 
 ## Each module contains
 

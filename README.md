@@ -22,8 +22,8 @@ SE2030 Software Engineering group project — Group **MLB-B4G2-09**.
 
 ```
 src/main/java/com/dozernet/
-├── common/              shared: security, base entity, users, notifications, exceptions
-├── module1_customer/    Customer Management        — G. Ananian (IT25102642)
+├── common/              shared: security, base entity, users, notification publisher, exceptions
+├── module1_customer/    Customer Management (+ customer notifications) — G. Ananian (IT25102642)
 ├── module2_booking/     Booking & Rental           — Theekshana A.D. (IT25101810)
 ├── module3_fleet/       Fleet (JCB) Management      — Jayawardhana A.G.D.L. (IT25100798)
 ├── module4_operator/    Operator Management         — Perera M.A.S.A. (IT25103606)

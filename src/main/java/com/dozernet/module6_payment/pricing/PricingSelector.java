@@ -8,8 +8,7 @@ import java.util.List;
 
 /**
  * Chooses the applicable {@link PricingStrategy} for a booking. Spring injects
- * all strategies in @Order order, so the first that applies wins (discount
- * before standard fallback).
+ * all strategies in @Order order, so the first that applies wins.
  */
 @Component
 public class PricingSelector {

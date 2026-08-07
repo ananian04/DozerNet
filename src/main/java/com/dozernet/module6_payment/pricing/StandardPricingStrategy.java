@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 /**
- * Default pricing: days * daily rate. Applies to any booking (fallback), so it
- * is ordered last.
+ * Default pricing: days * daily rate. Applies to any booking.
  */
 @Component
 @Order(100)

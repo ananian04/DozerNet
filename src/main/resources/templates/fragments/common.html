@@ -29,8 +29,13 @@
             <li sec:authorize="isAnonymous()"><a th:href="@{/login}">Sign in</a></li>
             <li sec:authorize="isAnonymous()"><a class="btn btn-primary btn-sm" th:href="@{/register}">Get started</a></li>
 
-            <!-- Authenticated -->
-            <li sec:authorize="isAuthenticated()">
+            <!-- Authenticated — customer alerts owned by Module 1 -->
+            <li sec:authorize="hasRole('CUSTOMER')">
+                <a th:href="@{/customer/notifications}">
+                    Alerts<span class="badge-count" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">0</span>
+                </a>
+            </li>
+            <li sec:authorize="isAuthenticated() and !hasRole('CUSTOMER')">
                 <a th:href="@{/notifications}">
                     Alerts<span class="badge-count" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">0</span>
                 </a>

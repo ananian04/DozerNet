@@ -102,7 +102,7 @@ class PaymentServiceTest {
     @Test
     void createsInvoiceForApprovedBooking() {
         when(invoiceRepository.existsByBooking(approvedBooking)).thenReturn(false);
-        when(pricingSelector.price(approvedBooking)).thenReturn(new BigDecimal("27000.00"));
+        when(pricingSelector.price(approvedBooking)).thenReturn(new BigDecimal("30000.00"));
         when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
             Invoice i = inv.getArgument(0);
             i.setId(99L);
@@ -111,21 +111,21 @@ class PaymentServiceTest {
 
         Invoice invoice = paymentService.createInvoiceForApprovedBooking(approvedBooking);
 
-        assertThat(invoice.getAmount()).isEqualByComparingTo("27000.00");
+        assertThat(invoice.getAmount()).isEqualByComparingTo("30000.00");
         assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
-        assertThat(approvedBooking.getTotalAmount()).isEqualByComparingTo("27000.00");
+        assertThat(approvedBooking.getTotalAmount()).isEqualByComparingTo("30000.00");
     }
 
     @Test
     void generatesInvoiceUsingPricingStrategy() {
         when(bookingService.getById(6L)).thenReturn(completedBooking);
         when(invoiceRepository.existsByBooking(completedBooking)).thenReturn(false);
-        when(pricingSelector.price(completedBooking)).thenReturn(new BigDecimal("27000.00"));
+        when(pricingSelector.price(completedBooking)).thenReturn(new BigDecimal("30000.00"));
         when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Invoice invoice = paymentService.generateInvoice(6L);
 
-        assertThat(invoice.getAmount()).isEqualByComparingTo("27000.00");
+        assertThat(invoice.getAmount()).isEqualByComparingTo("30000.00");
         assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
         assertThat(invoice.getCustomer()).isEqualTo(customer);
     }
