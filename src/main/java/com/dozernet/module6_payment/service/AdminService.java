@@ -43,7 +43,8 @@ public class AdminService {
     public record DashboardStats(long pendingBookings, long pendingListings, long pendingOperators,
                                  long totalMachines, long scheduledMaintenance, long unpaidInvoices,
                                  long awaitingOperatorAssignment,
-                                 BigDecimal revenueCollected, BigDecimal outstanding) {
+                                 BigDecimal revenueCollected, BigDecimal outstanding,
+                                 long machinesDueForService) {
     }
 
     public record RevenueReport(BigDecimal totalInvoiced, BigDecimal totalCollected, BigDecimal outstanding,
@@ -72,7 +73,8 @@ public class AdminService {
                 unpaid,
                 operatorService.countPaidAwaitingOperator(),
                 collected,
-                outstanding);
+                outstanding,
+                maintenanceService.countDueForService());
     }
 
     /** Paid bookings still waiting for an operator — for the dashboard alert. */

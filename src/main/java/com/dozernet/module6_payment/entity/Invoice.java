@@ -17,7 +17,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * An invoice raised for a completed booking. One invoice per booking.
+ * An invoice raised for a booking. One invoice per booking.
+ *
+ * <p>The total is itemised: hire charge, district haulage, then VAT on both.
+ * {@code amount} always holds the grand total the customer owes, so the balance
+ * and payment logic work off a single figure.</p>
  */
 @Entity
 @Table(name = "invoices")
@@ -30,8 +34,29 @@ public class Invoice extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private User customer;
 
+    /** Human-readable reference, e.g. INV-2026-00001. */
+    @Column(unique = true, length = 20)
+    private String invoiceNumber;
+
+    /** Hire charge before haulage and VAT. */
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal baseAmount = BigDecimal.ZERO;
+
+    /** District-based transport charge. */
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal transportSurcharge = BigDecimal.ZERO;
+
+    /** VAT charged on hire + transport. */
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal vatAmount = BigDecimal.ZERO;
+
+    /** Grand total payable (hire + transport + VAT). */
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
+
+    /** DozerNet's commission on a privately owned machine; zero otherwise. */
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal ownerCommission = BigDecimal.ZERO;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal amountPaid = BigDecimal.ZERO;
@@ -50,11 +75,27 @@ public class Invoice extends BaseEntity {
         this.booking = booking;
         this.customer = customer;
         this.amount = amount;
+        this.baseAmount = amount;
         this.issuedDate = LocalDate.now();
     }
 
     public BigDecimal getBalance() {
         return amount.subtract(amountPaid);
+    }
+
+    /** Hire + haulage, i.e. the figure VAT is charged on. */
+    public BigDecimal getSubTotal() {
+        return baseAmount.add(transportSurcharge);
+    }
+
+    /** What a private owner receives once commission is deducted. */
+    public BigDecimal getOwnerPayout() {
+        return baseAmount.subtract(ownerCommission);
+    }
+
+    /** Reference for display, falling back to the id for legacy rows. */
+    public String getReference() {
+        return invoiceNumber == null || invoiceNumber.isBlank() ? "#" + getId() : invoiceNumber;
     }
 
     public Booking getBooking() {
@@ -71,6 +112,46 @@ public class Invoice extends BaseEntity {
 
     public void setCustomer(User customer) {
         this.customer = customer;
+    }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
+    }
+
+    public BigDecimal getBaseAmount() {
+        return baseAmount;
+    }
+
+    public void setBaseAmount(BigDecimal baseAmount) {
+        this.baseAmount = baseAmount;
+    }
+
+    public BigDecimal getTransportSurcharge() {
+        return transportSurcharge;
+    }
+
+    public void setTransportSurcharge(BigDecimal transportSurcharge) {
+        this.transportSurcharge = transportSurcharge;
+    }
+
+    public BigDecimal getVatAmount() {
+        return vatAmount;
+    }
+
+    public void setVatAmount(BigDecimal vatAmount) {
+        this.vatAmount = vatAmount;
+    }
+
+    public BigDecimal getOwnerCommission() {
+        return ownerCommission;
+    }
+
+    public void setOwnerCommission(BigDecimal ownerCommission) {
+        this.ownerCommission = ownerCommission;
     }
 
     public BigDecimal getAmount() {

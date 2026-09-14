@@ -35,10 +35,22 @@ public class AdminMaintenanceController {
     public String index(Model model) {
         model.addAttribute("records", maintenanceService.all());
         model.addAttribute("machines", fleetService.findAll());
+        model.addAttribute("dueForService", maintenanceService.dueForService());
+        model.addAttribute("serviceIntervalMonths", MaintenanceService.SERVICE_INTERVAL_MONTHS);
         if (!model.containsAttribute("scheduleForm")) {
             model.addAttribute("scheduleForm", new ScheduleForm());
         }
         return "maintenance/admin-maintenance";
+    }
+
+    /** Sends the service-interval reminders for every machine that is overdue. */
+    @PostMapping("/admin/maintenance/remind")
+    public String sendServiceReminders(RedirectAttributes ra) {
+        int flagged = maintenanceService.sendServiceReminders();
+        ra.addFlashAttribute("success", flagged == 0
+                ? "No machines are currently due for service."
+                : "Reminders sent for " + flagged + " machine(s) due for service.");
+        return "redirect:/admin/maintenance";
     }
 
     @PostMapping("/admin/maintenance/schedule")

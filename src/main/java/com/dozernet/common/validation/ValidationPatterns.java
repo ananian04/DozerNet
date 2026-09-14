@@ -24,4 +24,20 @@ public final class ValidationPatterns {
     /** Driving licence number: alphanumeric, 5-15 chars. */
     public static final String LICENCE = "^[A-Za-z0-9]{5,15}$";
     public static final String LICENCE_MSG = "Enter a valid licence number (5-15 letters/digits)";
+
+    /**
+     * Account password policy: at least 8 characters, with at least one
+     * uppercase letter and one digit.
+     */
+    public static final String PASSWORD = "^(?=.*[A-Z])(?=.*\\d).{8,}$";
+    public static final String PASSWORD_MSG =
+            "Password must be at least 8 characters and include an uppercase letter and a number";
+
+    /** Payment card expiry as printed on the card: MM/YY. */
+    public static final String CARD_EXPIRY = "^(0[1-9]|1[0-2])/\\d{2}$";
+    public static final String CARD_EXPIRY_MSG = "Enter the card expiry as MM/YY";
+
+    /** Card verification value: exactly 3 digits. */
+    public static final String CARD_CVV = "^\\d{3}$";
+    public static final String CARD_CVV_MSG = "CVV must be 3 digits";
 }

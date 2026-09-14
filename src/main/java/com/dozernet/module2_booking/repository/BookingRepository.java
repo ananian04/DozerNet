@@ -52,6 +52,27 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     boolean existsByMachine(Machine machine);
 
+    /** All bookings created by one multi-machine request. */
+    @Query("""
+            select b from Booking b
+            join fetch b.machine
+            join fetch b.customer
+            where b.bookingGroupId = :groupId
+            order by b.id asc
+            """)
+    List<Booking> findByBookingGroupId(@Param("groupId") String groupId);
+
+    /** Bookings overlapping a date range, whatever the machine - used by reports. */
+    @Query("""
+            select b from Booking b
+            join fetch b.machine
+            where b.status in (com.dozernet.module2_booking.entity.BookingStatus.APPROVED,
+                               com.dozernet.module2_booking.entity.BookingStatus.COMPLETED)
+              and b.startDate <= :end
+              and b.endDate   >= :start
+            """)
+    List<Booking> findActiveBetween(@Param("start") LocalDate start, @Param("end") LocalDate end);
+
     /**
      * Overlapping bookings for a machine that still occupy the calendar
      * (PENDING or APPROVED). Two ranges overlap when start <= otherEnd AND

@@ -28,7 +28,7 @@ public class NotificationController {
     @GetMapping("/notifications")
     public String list(Model model) {
         User user = currentUserService.require();
-        if (user.getRole() == Role.CUSTOMER) {
+        if (user.hasRole(Role.CUSTOMER)) {
             return "redirect:/customer/notifications";
         }
         model.addAttribute("notifications", notificationService.forUser(user));
@@ -39,7 +39,7 @@ public class NotificationController {
     public String markAllRead() {
         User user = currentUserService.require();
         notificationService.markAllRead(user);
-        if (user.getRole() == Role.CUSTOMER) {
+        if (user.hasRole(Role.CUSTOMER)) {
             return "redirect:/customer/notifications";
         }
         return "redirect:/notifications";

@@ -41,6 +41,8 @@ public class MachineForm {
     @Size(max = 1000, message = "Description is too long")
     private String description;
 
+    /** Q12: every listing must carry a photo, whether added by an admin or an owner. */
+    @NotBlank(message = "A photo is required for every listing")
     @Size(max = 300)
     private String imageUrl;
 

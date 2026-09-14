@@ -1,5 +1,6 @@
 package com.dozernet.module3_fleet.service;
 
+import com.dozernet.common.audit.AuditService;
 import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.exception.ResourceNotFoundException;
 import com.dozernet.common.notification.NotificationService;
@@ -27,13 +28,16 @@ public class FleetService {
     private final MachineRepository machineRepository;
     private final BookingRepository bookingRepository;
     private final NotificationService notificationService;
+    private final AuditService auditService;
 
     public FleetService(MachineRepository machineRepository,
                         BookingRepository bookingRepository,
-                        NotificationService notificationService) {
+                        NotificationService notificationService,
+                        AuditService auditService) {
         this.machineRepository = machineRepository;
         this.bookingRepository = bookingRepository;
         this.notificationService = notificationService;
+        this.auditService = auditService;
     }
 
     // ---------- Read / search ----------
@@ -135,6 +139,8 @@ public class FleetService {
         Machine m = getById(id);
         m.setVerified(true);
         machineRepository.save(m);
+        auditService.record("LISTING_APPROVED", "Machine", m.getId(),
+                m.getModel() + " (" + m.getRegistrationNumber() + ") approved for hire");
         if (m.getOwner() != null) {
             notificationService.notify(m.getOwner(), "Listing approved",
                     "Your machine \"" + m.getModel() + "\" has been approved and is now bookable.");
@@ -149,7 +155,10 @@ public class FleetService {
         }
         User owner = m.getOwner();
         String model = m.getModel();
+        String registration = m.getRegistrationNumber();
         machineRepository.delete(m);
+        auditService.record("LISTING_REJECTED", "Machine", id,
+                model + " (" + registration + ") rejected and removed");
         if (owner != null) {
             notificationService.notify(owner, "Listing rejected",
                     "Your machine listing \"" + model + "\" was not approved. Please contact the administrator.");
@@ -161,8 +170,13 @@ public class FleetService {
     @Transactional
     public void setStatus(Long id, MachineStatus status) {
         Machine m = getById(id);
+        MachineStatus previous = m.getStatus();
         m.setStatus(status);
         machineRepository.save(m);
+        if (previous != status) {
+            auditService.record("MACHINE_STATUS_CHANGED", "Machine", m.getId(),
+                    m.getModel() + ": " + previous.getDisplayName() + " -> " + status.getDisplayName());
+        }
     }
 
     private void apply(MachineForm form, Machine m) {

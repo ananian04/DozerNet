@@ -1,5 +1,7 @@
 package com.dozernet.module3_fleet.web;
 
+import com.dozernet.common.document.DocumentService;
+import com.dozernet.common.document.DocumentType;
 import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.model.Role;
 import com.dozernet.common.security.CurrentUserService;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -31,13 +35,16 @@ public class OwnerController {
     private final FleetService fleetService;
     private final AccountService accountService;
     private final CurrentUserService currentUserService;
+    private final DocumentService documentService;
 
     public OwnerController(FleetService fleetService,
                            AccountService accountService,
-                           CurrentUserService currentUserService) {
+                           CurrentUserService currentUserService,
+                           DocumentService documentService) {
         this.fleetService = fleetService;
         this.accountService = accountService;
         this.currentUserService = currentUserService;
+        this.documentService = documentService;
     }
 
     // ---------- Public owner registration ----------
@@ -52,14 +59,16 @@ public class OwnerController {
 
     @PostMapping("/register/owner")
     public String register(@Valid @ModelAttribute("ownerForm") OwnerRegisterForm form,
-                           BindingResult binding) {
+                           BindingResult binding,
+                           @RequestParam(value = "nicCopy", required = false) MultipartFile nicCopy) {
         if (binding.hasErrors()) {
             return "fleet/owner-register";
         }
         try {
-            accountService.createAccount(form.getFullName(), form.getEmail(), form.getPhone(),
+            User owner = accountService.createAccount(form.getFullName(), form.getEmail(), form.getPhone(),
                     form.getIdentityCardNumber(),
                     form.getPassword(), form.getConfirmPassword(), Role.OWNER, true);
+            documentService.store(owner, DocumentType.NIC, nicCopy);
         } catch (BusinessRuleException ex) {
             binding.reject("registration", ex.getMessage());
             return "fleet/owner-register";
@@ -89,14 +98,18 @@ public class OwnerController {
 
     @PostMapping("/owner/machines/new")
     public String create(@Valid @ModelAttribute("machineForm") MachineForm form,
-                         BindingResult binding, Model model, RedirectAttributes ra) {
+                         BindingResult binding,
+                         @RequestParam(value = "ownershipProof", required = false) MultipartFile ownershipProof,
+                         Model model, RedirectAttributes ra) {
         if (binding.hasErrors()) {
             model.addAttribute("types", MachineType.values());
             model.addAttribute("mode", "new");
             return "fleet/owner-machine-form";
         }
         try {
-            fleetService.createOwnerListing(currentUserService.require(), form);
+            User owner = currentUserService.require();
+            fleetService.createOwnerListing(owner, form);
+            documentService.store(owner, DocumentType.OWNERSHIP, ownershipProof);
             ra.addFlashAttribute("success", "Listing submitted. It will be visible once an admin approves it.");
         } catch (BusinessRuleException ex) {
             ra.addFlashAttribute("error", ex.getMessage());

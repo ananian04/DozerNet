@@ -1,5 +1,6 @@
 package com.dozernet.module4_operator.service;
 
+import com.dozernet.common.audit.AuditService;
 import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.exception.ResourceNotFoundException;
 import com.dozernet.common.model.Role;
@@ -20,6 +21,7 @@ import com.dozernet.module6_payment.service.PaymentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -36,19 +38,22 @@ public class OperatorService {
     private final BookingService bookingService;
     private final NotificationService notificationService;
     private final PaymentService paymentService;
+    private final AuditService auditService;
 
     public OperatorService(OperatorProfileRepository profileRepository,
                            AssignmentRepository assignmentRepository,
                            AccountService accountService,
                            BookingService bookingService,
                            NotificationService notificationService,
-                           PaymentService paymentService) {
+                           PaymentService paymentService,
+                           AuditService auditService) {
         this.profileRepository = profileRepository;
         this.assignmentRepository = assignmentRepository;
         this.accountService = accountService;
         this.bookingService = bookingService;
         this.notificationService = notificationService;
         this.paymentService = paymentService;
+        this.auditService = auditService;
     }
 
     // ---------- Registration ----------
@@ -77,6 +82,8 @@ public class OperatorService {
         OperatorProfile p = getProfile(profileId);
         p.setVerified(true);
         profileRepository.save(p);
+        auditService.record("OPERATOR_VERIFIED", "OperatorProfile", p.getId(),
+                p.getUser().getFullName() + " - licence " + p.getLicenceNumber());
         notificationService.notify(p.getUser(), "Licence verified",
                 "Your driver licence has been verified. You can now be assigned to jobs.");
     }
@@ -108,6 +115,9 @@ public class OperatorService {
         }
 
         Assignment assignment = assignmentRepository.save(new Assignment(booking, operator));
+        auditService.record("OPERATOR_ASSIGNED", "Booking", booking.getId(),
+                operator.getFullName() + " assigned to " + booking.getMachine().getModel()
+                        + " (" + booking.getStartDate() + " to " + booking.getEndDate() + ")");
         notificationService.notify(operator, "New job assigned",
                 "You have been assigned to " + booking.getMachine().getModel()
                         + " (" + booking.getStartDate() + " to " + booking.getEndDate() + ").");
@@ -160,6 +170,47 @@ public class OperatorService {
 
     public List<Assignment> assignmentsFor(User operator) {
         return assignmentRepository.findByOperatorOrderByCreatedAtDesc(operator);
+    }
+
+    /**
+     * A verified operator offered for a booking, and whether their diary is free
+     * for those dates. The admin still makes the final choice - this only sorts
+     * the genuinely available people to the top and warns about the rest.
+     *
+     * @param clashingJobDates when busy, the dates of the job that clashes
+     */
+    public record OperatorOption(OperatorProfile profile, boolean available, String clashingJobDates) {
+    }
+
+    /**
+     * Verified operators for a booking, free ones first. Used to populate the
+     * admin assignment screen.
+     */
+    public List<OperatorOption> suggestionsFor(Booking booking) {
+        return verifiedOperators().stream()
+                .map(profile -> toOption(profile, booking))
+                .sorted(Comparator.comparing(OperatorOption::available).reversed()
+                        .thenComparing(option -> option.profile().getUser().getFullName()))
+                .toList();
+    }
+
+    /** Verified operators with no clashing job over the booking's dates. */
+    public List<OperatorProfile> availableOperatorsFor(Booking booking) {
+        return suggestionsFor(booking).stream()
+                .filter(OperatorOption::available)
+                .map(OperatorOption::profile)
+                .toList();
+    }
+
+    private OperatorOption toOption(OperatorProfile profile, Booking booking) {
+        List<Assignment> clashes = assignmentRepository.findOperatorClashes(
+                profile.getUser(), booking.getStartDate(), booking.getEndDate());
+        if (clashes.isEmpty()) {
+            return new OperatorOption(profile, true, null);
+        }
+        Booking clashing = clashes.get(0).getBooking();
+        return new OperatorOption(profile, false,
+                clashing.getStartDate() + " to " + clashing.getEndDate());
     }
 
     /** Approved bookings that still need an operator (for the admin assign screen). */

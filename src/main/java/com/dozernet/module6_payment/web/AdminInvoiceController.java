@@ -51,12 +51,25 @@ public class AdminInvoiceController {
         return "redirect:/admin/invoices";
     }
 
+    /** Chases every customer who still owes money on an invoice. */
+    @PostMapping("/admin/invoices/remind")
+    public String remindOutstanding(RedirectAttributes ra) {
+        int reminded = paymentService.remindAllOutstanding();
+        ra.addFlashAttribute("success", reminded == 0
+                ? "Nothing outstanding - no reminders needed."
+                : "Balance reminders sent for " + reminded + " invoice(s).");
+        return "redirect:/admin/invoices";
+    }
+
     @GetMapping("/admin/invoices/{id}")
     public String detail(@PathVariable Long id, Model model) {
         var invoice = paymentService.getInvoice(id);
         model.addAttribute("invoice", invoice);
         model.addAttribute("payments", paymentService.paymentsFor(invoice));
-        model.addAttribute("methods", PaymentMethod.values());
+        // A refund is written by the cancellation flow, not entered by hand.
+        model.addAttribute("methods", java.util.Arrays.stream(PaymentMethod.values())
+                .filter(m -> m != PaymentMethod.REFUND)
+                .toList());
         return "payment/admin-invoice-detail";
     }
 

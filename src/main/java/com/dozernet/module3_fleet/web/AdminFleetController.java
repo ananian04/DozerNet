@@ -1,5 +1,7 @@
 package com.dozernet.module3_fleet.web;
 
+import com.dozernet.common.document.Document;
+import com.dozernet.common.document.DocumentService;
 import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.module3_fleet.dto.MachineForm;
 import com.dozernet.module3_fleet.entity.Machine;
@@ -17,6 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Admin fleet management: company machine CRUD, availability status, and
  * approval/rejection of private owner listings.
@@ -25,9 +31,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminFleetController {
 
     private final FleetService fleetService;
+    private final DocumentService documentService;
 
-    public AdminFleetController(FleetService fleetService) {
+    public AdminFleetController(FleetService fleetService, DocumentService documentService) {
         this.fleetService = fleetService;
+        this.documentService = documentService;
     }
 
     @GetMapping("/admin/machines")
@@ -121,7 +129,20 @@ public class AdminFleetController {
 
     @GetMapping("/admin/listings")
     public String pendingListings(Model model) {
-        model.addAttribute("machines", fleetService.pendingApprovals());
+        List<Machine> pending = fleetService.pendingApprovals();
+
+        // Ownership proof and NIC copies the owner uploaded, so the admin can
+        // check the paperwork before publishing a listing.
+        Map<Long, List<Document>> ownerDocuments = new LinkedHashMap<>();
+        for (Machine machine : pending) {
+            if (machine.getOwner() != null) {
+                ownerDocuments.putIfAbsent(machine.getOwner().getId(),
+                        documentService.forOwner(machine.getOwner()));
+            }
+        }
+
+        model.addAttribute("machines", pending);
+        model.addAttribute("ownerDocuments", ownerDocuments);
         return "fleet/admin-listings";
     }
 

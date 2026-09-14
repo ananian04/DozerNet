@@ -25,14 +25,14 @@ import java.util.Map;
  * demonstrable immediately. Runs first (Order 1); module-specific seed data
  * runs afterwards. Idempotent: only seeds when the users table is empty.
  *
- * Demo password for every seeded account: "password123".
+ * Demo password for every seeded account: "Password123" (meets the uppercase + digit policy).
  */
 @Component
 @Order(1)
 public class DataSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
-    public static final String DEMO_PASSWORD = "password123";
+    public static final String DEMO_PASSWORD = "Password123";
 
     private static final Map<MachineType, String> TYPE_IMAGES = new EnumMap<>(MachineType.class);
 
@@ -44,6 +44,10 @@ public class DataSeeder implements CommandLineRunner {
         TYPE_IMAGES.put(MachineType.TELEHANDLER, "/images/machines/telehandler.jpg");
         TYPE_IMAGES.put(MachineType.COMPACTOR, "/images/machines/compactor.jpg");
         TYPE_IMAGES.put(MachineType.BULLDOZER, "/images/machines/bulldozer.jpg");
+        // Interim photos for the two newest categories - replace with
+        // motor-grader.jpg / dump-truck.jpg once real shots are available.
+        TYPE_IMAGES.put(MachineType.MOTOR_GRADER, "/images/machines/bulldozer.jpg");
+        TYPE_IMAGES.put(MachineType.DUMP_TRUCK, "/images/machines/wheel-loader.jpg");
     }
 
     private final UserRepository userRepository;
@@ -190,6 +194,18 @@ public class DataSeeder implements CommandLineRunner {
                 "Soil and asphalt roller for roadwork finishing.");
         company("JCB CT160 Compactor", MachineType.COMPACTOR, "SP CMP-1120", "Hambantota", "15000.00",
                 "Tandem roller for pathways and small road sections.");
+
+        // Grading
+        company("JCB 1110 Motor Grader", MachineType.MOTOR_GRADER, "NW GRD-2240", "Kurunegala", "30000.00",
+                "Motor grader for road levelling, cambering and gravel finishing.");
+        company("JCB 1155 Motor Grader", MachineType.MOTOR_GRADER, "CP GRD-7705", "Kandy", "33500.00",
+                "Heavy grader for highway sub-base preparation.");
+
+        // Hauling
+        company("Tata Prima 2528 Tipper", MachineType.DUMP_TRUCK, "WP DMP-6620", "Colombo", "19500.00",
+                "10-cube tipper for soil, aggregate and debris haulage.");
+        company("Ashok Leyland 2518 Tipper", MachineType.DUMP_TRUCK, "SP DMP-8834", "Galle", "18500.00",
+                "Site tipper for sand and metal deliveries.");
     }
 
     private void company(String model, MachineType type, String reg, String location,

@@ -29,6 +29,7 @@ public class OwnerRegisterForm {
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 72, message = "Password must be at least 8 characters")
+    @Pattern(regexp = ValidationPatterns.PASSWORD, message = ValidationPatterns.PASSWORD_MSG)
     private String password;
 
     @NotBlank(message = "Please confirm your password")

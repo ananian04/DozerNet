@@ -25,7 +25,7 @@ public record JobCategory(
                     new MachineType[]{MachineType.EXCAVATOR, MachineType.BACKHOE_LOADER}, 0),
             new JobCategory("Earthmoving", "earthmoving", "/images/machines/bulldozer.jpg",
                     MachineType.BULLDOZER,
-                    new MachineType[]{MachineType.BULLDOZER}, 0),
+                    new MachineType[]{MachineType.BULLDOZER, MachineType.MOTOR_GRADER}, 0),
             new JobCategory("Loading", "loading", "/images/machines/wheel-loader.jpg",
                     MachineType.WHEEL_LOADER,
                     new MachineType[]{MachineType.WHEEL_LOADER, MachineType.SKID_STEER}, 0),
@@ -34,7 +34,12 @@ public record JobCategory(
                     new MachineType[]{MachineType.TELEHANDLER}, 0),
             new JobCategory("Compacting", "compacting", "/images/machines/compactor.jpg",
                     MachineType.COMPACTOR,
-                    new MachineType[]{MachineType.COMPACTOR}, 0)
+                    new MachineType[]{MachineType.COMPACTOR}, 0),
+            // Interim photo: drop a real dump-truck shot at
+            // /images/machines/dump-truck.jpg and point this here.
+            new JobCategory("Hauling", "hauling", "/images/machines/wheel-loader.jpg",
+                    MachineType.DUMP_TRUCK,
+                    new MachineType[]{MachineType.DUMP_TRUCK}, 0)
     );
 
     public JobCategory withCount(long count) {

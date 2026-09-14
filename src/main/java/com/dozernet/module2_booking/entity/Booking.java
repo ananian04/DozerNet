@@ -50,6 +50,15 @@ public class Booking extends BaseEntity {
     @Column(nullable = false, length = 255)
     private String jobSiteAddress = "";
 
+    /**
+     * Groups the bookings created from a single multi-machine request, so a
+     * customer who hires three machines for one job sees them together. Null
+     * for a single-machine request. Each machine still has its own booking,
+     * invoice and operator assignment.
+     */
+    @Column(length = 36)
+    private String bookingGroupId;
+
     public Booking() {
     }
 
@@ -141,5 +150,18 @@ public class Booking extends BaseEntity {
 
     public void setJobSiteAddress(String jobSiteAddress) {
         this.jobSiteAddress = jobSiteAddress;
+    }
+
+    public String getBookingGroupId() {
+        return bookingGroupId;
+    }
+
+    public void setBookingGroupId(String bookingGroupId) {
+        this.bookingGroupId = bookingGroupId;
+    }
+
+    /** True when this booking was part of a multi-machine request. */
+    public boolean isPartOfGroup() {
+        return bookingGroupId != null && !bookingGroupId.isBlank();
     }
 }

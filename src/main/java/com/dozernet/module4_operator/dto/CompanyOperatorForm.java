@@ -32,6 +32,7 @@ public class CompanyOperatorForm {
 
     @NotBlank(message = "Set an initial password")
     @Size(min = 8, max = 72, message = "Password must be at least 8 characters")
+    @Pattern(regexp = ValidationPatterns.PASSWORD, message = ValidationPatterns.PASSWORD_MSG)
     private String password;
 
     @NotBlank(message = "Licence number is required")

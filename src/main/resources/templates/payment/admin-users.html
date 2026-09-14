@@ -26,7 +26,7 @@
                     <td th:text="${u.email}">email</td>
                     <td th:text="${u.phone}">phone</td>
                     <td th:text="${u.identityCardNumber}">NIC</td>
-                    <td><span class="pill" th:text="${u.role}">CUSTOMER</span></td>
+                    <td><span class="pill" th:text="${u.rolesLabel}">Customer</span></td>
                     <td>
                         <span class="pill pill-approved" th:if="${u.enabled}">Active</span>
                         <span class="pill pill-rejected" th:unless="${u.enabled}">Disabled</span>

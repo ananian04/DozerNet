@@ -10,6 +10,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Public customer self-registration (Customer Management module).
@@ -33,12 +35,13 @@ public class RegistrationController {
 
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute("registerForm") RegisterForm form,
-                           BindingResult binding) {
+                           BindingResult binding,
+                           @RequestParam(value = "nicCopy", required = false) MultipartFile nicCopy) {
         if (binding.hasErrors()) {
             return "customer/register";
         }
         try {
-            customerService.register(form);
+            customerService.register(form, nicCopy);
         } catch (BusinessRuleException ex) {
             binding.reject("registration", ex.getMessage());
             return "customer/register";

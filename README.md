@@ -57,7 +57,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=mysql
 
 ## Demo accounts
 
-Seeded automatically on first run. Password for **all** demo accounts: `password123`.
+Seeded automatically on first run. Password for **all** demo accounts: `Password123`.
 
 | Role     | Email                  |
 |----------|------------------------|

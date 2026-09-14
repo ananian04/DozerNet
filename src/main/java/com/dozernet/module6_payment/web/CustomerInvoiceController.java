@@ -6,6 +6,7 @@ import com.dozernet.common.security.CurrentUserService;
 import com.dozernet.common.user.User;
 import com.dozernet.module6_payment.entity.Invoice;
 import com.dozernet.module6_payment.entity.InvoiceStatus;
+import com.dozernet.module6_payment.service.CardPaymentRequest;
 import com.dozernet.module6_payment.service.PaymentService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.math.BigDecimal;
 
 /**
  * Customer-facing invoices: list, view, demo card payment portal, and thank-you.
@@ -62,12 +65,22 @@ public class CustomerInvoiceController {
     public String pay(@PathVariable Long id,
                       @RequestParam String cardholderName,
                       @RequestParam String cardNumber,
+                      @RequestParam(required = false) String expiry,
+                      @RequestParam(required = false) String cvc,
+                      @RequestParam(required = false) BigDecimal amount,
                       RedirectAttributes ra) {
         try {
-            String digits = cardNumber == null ? "" : cardNumber.replaceAll("\\D", "");
-            String last4 = digits.length() >= 4 ? digits.substring(digits.length() - 4) : digits;
-            paymentService.recordCustomerPayment(id, currentUserService.require(), cardholderName, last4);
-            return "redirect:/customer/invoices/" + id + "/thank-you";
+            CardPaymentRequest card = new CardPaymentRequest(cardholderName, cardNumber, expiry, cvc);
+            paymentService.recordCustomerPayment(id, currentUserService.require(), card, amount);
+
+            Invoice invoice = paymentService.getInvoice(id);
+            if (invoice.getStatus() == InvoiceStatus.PAID) {
+                return "redirect:/customer/invoices/" + id + "/thank-you";
+            }
+            // Part payment: back to the invoice, showing what is still owed.
+            ra.addFlashAttribute("message", "Part payment received. Rs. " + invoice.getBalance()
+                    + " is still outstanding on invoice " + invoice.getReference() + ".");
+            return "redirect:/customer/invoices/" + id;
         } catch (BusinessRuleException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
             return "redirect:/customer/invoices/" + id + "/pay";

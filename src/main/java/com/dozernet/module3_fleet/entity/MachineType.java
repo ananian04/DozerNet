@@ -10,7 +10,9 @@ public enum MachineType {
     SKID_STEER("Skid Steer Loader"),
     TELEHANDLER("Telehandler"),
     COMPACTOR("Compactor / Roller"),
-    BULLDOZER("Bulldozer");
+    BULLDOZER("Bulldozer"),
+    MOTOR_GRADER("Motor Grader"),
+    DUMP_TRUCK("Dump Truck");
 
     private final String displayName;
 

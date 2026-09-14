@@ -40,7 +40,7 @@ public class CustomerNotificationService {
     }
 
     private static void requireCustomer(User user) {
-        if (user == null || user.getRole() != Role.CUSTOMER) {
+        if (user == null || !user.hasRole(Role.CUSTOMER)) {
             throw new IllegalArgumentException("Notifications inbox is for customers only.");
         }
     }
