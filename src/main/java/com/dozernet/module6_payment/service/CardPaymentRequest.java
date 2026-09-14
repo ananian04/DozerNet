@@ -69,7 +69,7 @@ public record CardPaymentRequest(String cardholderName, String cardNumber, Strin
      * every second digit from the right, subtract 9 from anything over 9, and
      * the total must divide by 10.
      */
-    static boolean passesLuhn(String digits) {
+    public static boolean passesLuhn(String digits) {
         int sum = 0;
         boolean doubleDigit = false;
         for (int i = digits.length() - 1; i >= 0; i--) {

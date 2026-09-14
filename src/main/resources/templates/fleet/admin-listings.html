@@ -20,13 +20,22 @@
         <div class="table-wrap" th:unless="${#lists.isEmpty(machines)}">
             <table class="data">
                 <thead>
-                <tr><th>Model</th><th>Type</th><th>Owner</th><th>Location</th><th>Rate</th><th>Actions</th></tr>
+                <tr><th>Model</th><th>Type</th><th>Owner</th><th>Documents</th><th>Location</th><th>Rate</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="m : ${machines}">
                     <td th:text="${m.model}">Model</td>
                     <td th:text="${m.type.displayName}">Type</td>
                     <td th:text="${m.owner != null ? m.owner.fullName : '-'}">Owner</td>
+                    <td>
+                        <th:block th:if="${m.owner != null and ownerDocuments.get(m.owner.id) != null}">
+                            <a th:each="doc : ${ownerDocuments.get(m.owner.id)}"
+                               class="btn btn-ghost btn-sm" style="margin:0 .2rem .2rem 0"
+                               th:href="@{'/documents/' + ${doc.id}}" target="_blank"
+                               th:text="${doc.type.displayName}">Document</a>
+                            <span class="muted" th:if="${#lists.isEmpty(ownerDocuments.get(m.owner.id))}">None uploaded</span>
+                        </th:block>
+                    </td>
                     <td th:text="${m.location}">Location</td>
                     <td><span th:text="${currencySymbol}">Rs.</span> <span th:text="${#numbers.formatDecimal(m.dailyRate,1,'COMMA',2,'POINT')}">0</span></td>
                     <td style="display:flex;gap:.4rem">

@@ -40,9 +40,19 @@
                     Alerts<span class="badge-count" th:if="${unreadNotifications > 0}" th:text="${unreadNotifications}">0</span>
                 </a>
             </li>
-            <li sec:authorize="hasRole('CUSTOMER')"><a th:href="@{/customer/dashboard}">Dashboard</a></li>
-            <li sec:authorize="hasRole('OWNER')"><a th:href="@{/owner/dashboard}">Dashboard</a></li>
-            <li sec:authorize="hasRole('OPERATOR')"><a th:href="@{/operator/dashboard}">Dashboard</a></li>
+            <!-- One account can hold several roles, so each dashboard it can reach is listed. -->
+            <li sec:authorize="hasRole('CUSTOMER')">
+                <a th:href="@{/customer/dashboard}"
+                   th:text="${currentUser != null and currentUser.roles.size() > 1} ? 'Customer' : 'Dashboard'">Dashboard</a>
+            </li>
+            <li sec:authorize="hasRole('OWNER')">
+                <a th:href="@{/owner/dashboard}"
+                   th:text="${currentUser != null and currentUser.roles.size() > 1} ? 'Owner' : 'Dashboard'">Dashboard</a>
+            </li>
+            <li sec:authorize="hasRole('OPERATOR')">
+                <a th:href="@{/operator/dashboard}"
+                   th:text="${currentUser != null and currentUser.roles.size() > 1} ? 'Operator' : 'Dashboard'">Dashboard</a>
+            </li>
             <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/dashboard}">Admin</a></li>
             <li sec:authorize="isAuthenticated()">
                 <form th:action="@{/logout}" method="post" style="display:inline">

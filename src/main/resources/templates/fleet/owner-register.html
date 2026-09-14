@@ -10,7 +10,7 @@
         <h1 style="font-size:1.8rem">List your machines</h1>
         <p class="muted">Register as a private owner. Your listings go live once an admin verifies them.</p>
 
-        <form th:action="@{/register/owner}" th:object="${ownerForm}" method="post" novalidate>
+        <form th:action="@{/register/owner}" th:object="${ownerForm}" method="post" enctype="multipart/form-data" novalidate>
             <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
                 <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</div>
             </div>
@@ -47,6 +47,14 @@
                     <input class="input" id="confirmPassword" type="password" th:field="*{confirmPassword}"/>
                     <div class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
                 </div>
+            </div>
+            <div class="field">
+                <label for="nicCopy">NIC copy (optional)</label>
+                <input class="input" id="nicCopy" type="file" name="nicCopy"
+                       accept="image/jpeg,image/png,image/webp,application/pdf"/>
+                <p class="muted" style="margin:.35rem 0 0">
+                    Speeds up verification. Kept on your account for future listings.
+                </p>
             </div>
             <button class="btn btn-primary btn-block" type="submit">Register as owner</button>
         </form>

@@ -71,8 +71,8 @@ class ValidationPatternsTest {
         form.setEmail("gayan@example.lk");
         form.setPhone("0771234567");
         form.setIdentityCardNumber("199512345678");
-        form.setPassword("password123");
-        form.setConfirmPassword("password123");
+        form.setPassword("Password123");
+        form.setConfirmPassword("Password123");
 
         assertThat(validator.validate(form)).isEmpty();
     }

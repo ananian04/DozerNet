@@ -52,6 +52,9 @@
             <a class="card card-hover" th:href="@{/admin/invoices}" style="text-decoration:none;color:inherit">
                 <div class="stat" th:text="${stats.unpaidInvoices}">0</div><p>Unpaid invoices</p>
             </a>
+            <a class="card card-hover" th:href="@{/admin/maintenance}" style="text-decoration:none;color:inherit">
+                <div class="stat" th:text="${stats.machinesDueForService}">0</div><p>Due for service</p>
+            </a>
         </div>
 
         <div class="grid grid-2" style="margin-bottom:var(--space-5)">
@@ -103,6 +106,8 @@
             <a class="card card-hover" th:href="@{/admin/invoices}" style="text-decoration:none;color:inherit"><h3>Invoices</h3><p class="muted">Billing & payments</p></a>
             <a class="card card-hover" th:href="@{/admin/reports}" style="text-decoration:none;color:inherit"><h3>Reports</h3><p class="muted">Bookings & revenue</p></a>
             <a class="card card-hover" th:href="@{/admin/users}" style="text-decoration:none;color:inherit"><h3>Users</h3><p class="muted">Manage accounts</p></a>
+            <a class="card card-hover" th:href="@{/admin/inspections}" style="text-decoration:none;color:inherit"><h3>Inspections</h3><p class="muted">Returns &amp; damage</p></a>
+            <a class="card card-hover" th:href="@{/admin/audit}" style="text-decoration:none;color:inherit"><h3>Audit log</h3><p class="muted">Who changed what</p></a>
         </div>
     </div>
 </section>

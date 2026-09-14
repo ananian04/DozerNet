@@ -9,7 +9,7 @@
     <div class="container">
         <div class="page-head">
             <div>
-                <p class="eyebrow">Admin &middot; Invoice #<span th:text="${invoice.id}">1</span></p>
+                <p class="eyebrow">Admin &middot; Invoice <span th:text="${invoice.reference}">INV-2026-00001</span></p>
                 <h1 th:text="${invoice.booking.machine.model}">Machine</h1>
             </div>
             <a class="btn btn-ghost" th:href="@{/admin/invoices}">Back</a>
@@ -29,10 +29,45 @@
                 <p class="muted" style="margin:0">Balance</p>
                 <div class="stat"><span th:text="${currencySymbol}">Rs.</span>
                     <span th:text="${#numbers.formatDecimal(invoice.balance,1,'COMMA',2,'POINT')}">0</span></div>
-                <p>Amount <span th:text="${currencySymbol}">Rs.</span>
-                    <span th:text="${#numbers.formatDecimal(invoice.amount,1,'COMMA',2,'POINT')}">0</span>
-                    &middot; Paid <span th:text="${currencySymbol}">Rs.</span>
-                    <span th:text="${#numbers.formatDecimal(invoice.amountPaid,1,'COMMA',2,'POINT')}">0</span></p>
+                <table class="data" style="margin-top:.6rem">
+                    <tbody>
+                    <tr>
+                        <td>Hire charge</td>
+                        <td style="text-align:right"><span th:text="${currencySymbol}">Rs.</span>
+                            <span th:text="${#numbers.formatDecimal(invoice.baseAmount,1,'COMMA',2,'POINT')}">0</span></td>
+                    </tr>
+                    <tr>
+                        <td>Transport surcharge</td>
+                        <td style="text-align:right"><span th:text="${currencySymbol}">Rs.</span>
+                            <span th:text="${#numbers.formatDecimal(invoice.transportSurcharge,1,'COMMA',2,'POINT')}">0</span></td>
+                    </tr>
+                    <tr>
+                        <td>VAT (18%)</td>
+                        <td style="text-align:right"><span th:text="${currencySymbol}">Rs.</span>
+                            <span th:text="${#numbers.formatDecimal(invoice.vatAmount,1,'COMMA',2,'POINT')}">0</span></td>
+                    </tr>
+                    <tr>
+                        <th>Total</th>
+                        <th style="text-align:right"><span th:text="${currencySymbol}">Rs.</span>
+                            <span th:text="${#numbers.formatDecimal(invoice.amount,1,'COMMA',2,'POINT')}">0</span></th>
+                    </tr>
+                    <tr>
+                        <td>Paid to date</td>
+                        <td style="text-align:right"><span th:text="${currencySymbol}">Rs.</span>
+                            <span th:text="${#numbers.formatDecimal(invoice.amountPaid,1,'COMMA',2,'POINT')}">0</span></td>
+                    </tr>
+                    <tr th:if="${invoice.ownerCommission.signum() > 0}">
+                        <td class="muted">DozerNet commission (10% of hire)</td>
+                        <td class="muted" style="text-align:right"><span th:text="${currencySymbol}">Rs.</span>
+                            <span th:text="${#numbers.formatDecimal(invoice.ownerCommission,1,'COMMA',2,'POINT')}">0</span></td>
+                    </tr>
+                    <tr th:if="${invoice.ownerCommission.signum() > 0}">
+                        <td class="muted">Owner payout</td>
+                        <td class="muted" style="text-align:right"><span th:text="${currencySymbol}">Rs.</span>
+                            <span th:text="${#numbers.formatDecimal(invoice.ownerPayout,1,'COMMA',2,'POINT')}">0</span></td>
+                    </tr>
+                    </tbody>
+                </table>
                 <p><span class="pill" th:text="${invoice.status}">UNPAID</span></p>
             </div>
         </div>

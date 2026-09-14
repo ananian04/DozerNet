@@ -27,7 +27,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -42,6 +45,9 @@ class BookingServiceTest {
     @Mock NotificationService notificationService;
     @Mock UserRepository userRepository;
     @Mock com.dozernet.module6_payment.service.PaymentService paymentService;
+    @Mock com.dozernet.module2_booking.repository.MachineReplacementLogRepository replacementLogRepository;
+    @Mock com.dozernet.common.audit.AuditService auditService;
+    @Mock com.dozernet.common.security.CurrentUserService currentUserService;
 
     @InjectMocks BookingService bookingService;
 
@@ -128,12 +134,143 @@ class BookingServiceTest {
 
     @Test
     void rejectsInvalidJobSiteDistrict() {
-        when(bookingRepository.findOverlapping(any(), any(), any())).thenReturn(List.of());
         assertThatThrownBy(() -> bookingService.create(customer, 10L,
                 LocalDate.now().plusDays(1), LocalDate.now().plusDays(2),
                 "Atlantis", "Somewhere"))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("district");
+    }
+
+    @Test
+    void rejectsBookingBeyondTheAdvanceWindow() {
+        LocalDate tooFar = LocalDate.now().plusDays(BookingService.MAX_ADVANCE_DAYS + 1);
+
+        assertThatThrownBy(() -> bookingService.create(customer, 10L, tooFar, tooFar,
+                "Colombo", "Site A"))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("180 days in advance");
+    }
+
+    @Test
+    void acceptsABookingOnTheLastAllowedDay() {
+        LocalDate lastAllowed = LocalDate.now().plusDays(BookingService.MAX_ADVANCE_DAYS);
+        when(bookingRepository.findOverlapping(any(), any(), any())).thenReturn(List.of());
+
+        Booking b = bookingService.create(customer, 10L, lastAllowed, lastAllowed, "Colombo", "Site A");
+
+        assertThat(b.getStatus()).isEqualTo(BookingStatus.PENDING);
+    }
+
+    @Test
+    void booksEveryMachineInAMultiMachineRequestUnderOneGroup() {
+        Machine second = new Machine();
+        second.setId(11L);
+        second.setModel("JCB JS205");
+        second.setType(MachineType.EXCAVATOR);
+        second.setDailyRate(new BigDecimal("20000.00"));
+        second.setStatus(MachineStatus.AVAILABLE);
+        second.setVerified(true);
+        lenient().when(fleetService.getById(11L)).thenReturn(second);
+        when(bookingRepository.findOverlapping(any(), any(), any())).thenReturn(List.of());
+
+        List<Booking> created = bookingService.createForMachines(customer, List.of(10L, 11L),
+                LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), "Colombo", "Site A");
+
+        assertThat(created).hasSize(2);
+        assertThat(created).allMatch(Booking::isPartOfGroup);
+        assertThat(created.get(0).getBookingGroupId()).isEqualTo(created.get(1).getBookingGroupId());
+    }
+
+    @Test
+    void singleMachineRequestIsNotGrouped() {
+        when(bookingRepository.findOverlapping(any(), any(), any())).thenReturn(List.of());
+
+        List<Booking> created = bookingService.createForMachines(customer, List.of(10L),
+                LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), "Colombo", "Site A");
+
+        assertThat(created).hasSize(1);
+        assertThat(created.get(0).isPartOfGroup()).isFalse();
+    }
+
+    @Test
+    void cannotCancelAnUnpaidBookingOnceItsHireHasStarted() {
+        Booking b = new Booking(customer, machine, LocalDate.now(), LocalDate.now().plusDays(2));
+        b.setId(7L);
+        b.setStatus(BookingStatus.APPROVED);
+        when(bookingRepository.findById(7L)).thenReturn(java.util.Optional.of(b));
+        when(paymentService.isInvoicePaidForBooking(b)).thenReturn(false);
+
+        assertThatThrownBy(() -> bookingService.cancelApproved(7L))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("before its start date");
+    }
+
+    @Test
+    void cancellingAPaidBookingRefundsThroughThePaymentModule() {
+        Booking b = new Booking(customer, machine, LocalDate.now().plusDays(10), LocalDate.now().plusDays(12));
+        b.setId(8L);
+        b.setStatus(BookingStatus.APPROVED);
+        when(bookingRepository.findById(8L)).thenReturn(java.util.Optional.of(b));
+        when(paymentService.isInvoicePaidForBooking(b)).thenReturn(true);
+        // Cancelled well ahead of the hire date, so the whole amount comes back.
+        when(paymentService.refundForCancellation(eq(b), eq(BigDecimal.ONE)))
+                .thenReturn(new BigDecimal("30000.00"));
+
+        bookingService.cancelApproved(8L);
+
+        assertThat(b.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+        verify(paymentService).refundForCancellation(b, BigDecimal.ONE);
+    }
+
+    @Test
+    void replacingAMachineLogsTheSwapAndNotifiesTheCustomer() {
+        Booking b = new Booking(customer, machine, LocalDate.now().plusDays(3), LocalDate.now().plusDays(5));
+        b.setId(9L);
+        b.setStatus(BookingStatus.APPROVED);
+        when(bookingRepository.findById(9L)).thenReturn(java.util.Optional.of(b));
+
+        Machine replacement = new Machine();
+        replacement.setId(12L);
+        replacement.setModel("JCB 4CX");
+        replacement.setType(MachineType.BACKHOE_LOADER);
+        replacement.setDailyRate(new BigDecimal("12000.00"));
+        replacement.setStatus(MachineStatus.AVAILABLE);
+        replacement.setVerified(true);
+        when(fleetService.getById(12L)).thenReturn(replacement);
+        when(bookingRepository.findOverlapping(eq(replacement), any(), any())).thenReturn(List.of());
+        when(replacementLogRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        bookingService.replaceMachine(9L, 12L, "Hydraulic fault");
+
+        assertThat(b.getMachine()).isEqualTo(replacement);
+        // Re-priced at the replacement's daily rate over three days.
+        assertThat(b.getTotalAmount()).isEqualByComparingTo("36000.00");
+        verify(replacementLogRepository).save(any());
+        verify(notificationService).notify(eq(customer), eq("Machine changed for your booking"), anyString());
+    }
+
+    @Test
+    void cannotReplaceWithAMachineThatIsAlreadyBooked() {
+        Booking b = new Booking(customer, machine, LocalDate.now().plusDays(3), LocalDate.now().plusDays(5));
+        b.setId(9L);
+        b.setStatus(BookingStatus.APPROVED);
+        when(bookingRepository.findById(9L)).thenReturn(java.util.Optional.of(b));
+
+        Machine replacement = new Machine();
+        replacement.setId(12L);
+        replacement.setModel("JCB 4CX");
+        replacement.setDailyRate(new BigDecimal("12000.00"));
+        replacement.setStatus(MachineStatus.AVAILABLE);
+        replacement.setVerified(true);
+        when(fleetService.getById(12L)).thenReturn(replacement);
+
+        Booking clash = new Booking(customer, replacement, LocalDate.now().plusDays(4), LocalDate.now().plusDays(6));
+        clash.setId(99L);
+        when(bookingRepository.findOverlapping(eq(replacement), any(), any())).thenReturn(List.of(clash));
+
+        assertThatThrownBy(() -> bookingService.replaceMachine(9L, 12L, "Breakdown"))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("already booked");
     }
 
     @Test

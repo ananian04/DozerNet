@@ -47,8 +47,11 @@
                                 <input type="hidden" name="bookingId" th:value="${b.id}"/>
                                 <select class="select" name="operatorId" style="padding:.35rem .5rem" required>
                                     <option value="" disabled selected>Select operator</option>
-                                    <option th:each="o : ${operators}" th:value="${o.user.id}"
-                                            th:text="${o.user.fullName} + ' (' + ${o.experienceYears} + ' yr)'"></option>
+                                    <!-- Free operators are listed first; busy ones are flagged. -->
+                                    <option th:each="opt : ${suggestions.get(b.id)}" th:value="${opt.profile.user.id}"
+                                            th:disabled="${!opt.available}"
+                                            th:text="${opt.profile.user.fullName} + ' (' + ${opt.profile.experienceYears} + ' yr)'
+                                                     + (${opt.available} ? ' — available' : ' — busy ' + ${opt.clashingJobDates})"></option>
                                 </select>
                                 <button class="btn btn-primary btn-sm" type="submit" th:disabled="${#lists.isEmpty(operators)}">Assign</button>
                             </form>

@@ -9,7 +9,7 @@
         <p class="eyebrow">Join DozerNet</p>
         <h1 style="font-size:1.8rem">Create your account</h1>
 
-        <form th:action="@{/register}" th:object="${registerForm}" method="post" novalidate>
+        <form th:action="@{/register}" th:object="${registerForm}" method="post" enctype="multipart/form-data" novalidate>
             <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
                 <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</div>
             </div>
@@ -38,7 +38,7 @@
             <div class="form-row">
                 <div class="field">
                     <label for="password">Password</label>
-                    <input class="input" id="password" type="password" th:field="*{password}" placeholder="Min 8 characters"/>
+                    <input class="input" id="password" type="password" th:field="*{password}" placeholder="8+ chars, 1 capital, 1 number"/>
                     <div class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
                 </div>
                 <div class="field">
@@ -46,6 +46,12 @@
                     <input class="input" id="confirmPassword" type="password" th:field="*{confirmPassword}" placeholder="Re-enter password"/>
                     <div class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
                 </div>
+            </div>
+            <div class="field">
+                <label for="nicCopy">NIC copy (optional)</label>
+                <input class="input" id="nicCopy" type="file" name="nicCopy"
+                       accept="image/jpeg,image/png,image/webp,application/pdf"/>
+                <p class="muted" style="margin:.35rem 0 0">Upload a JPG, PNG or PDF (max 5&nbsp;MB). We keep it on your account so you never have to send it twice.</p>
             </div>
             <button class="btn btn-primary btn-block" type="submit">Create account</button>
         </form>

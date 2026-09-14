@@ -26,7 +26,7 @@
                     <span th:text="${currencySymbol}">Rs.</span>
                     <span th:text="${#numbers.formatDecimal(invoice.amountPaid,1,'COMMA',2,'POINT')}">0</span>
                 </strong>
-                &middot; Invoice #<span th:text="${invoice.id}">1</span>
+                &middot; Invoice <span th:text="${invoice.reference}">INV-2026-00001</span>
             </p>
             <p class="muted">
                 A confirmation and invoice copy were sent to

@@ -21,6 +21,7 @@
                         th:selected="${selectedStatus != null and selectedStatus == s}"></option>
             </select>
             <a class="btn btn-ghost" th:href="@{/admin/bookings}">Reset</a>
+            <a class="btn btn-ghost" th:href="@{/admin/inspections}">Return inspections</a>
         </form>
 
         <p class="muted" th:if="${#lists.isEmpty(bookings)}">No bookings to show.</p>
@@ -33,7 +34,10 @@
                 <tbody>
                 <tr th:each="b : ${bookings}">
                     <td th:text="${b.customer.fullName}">Customer</td>
-                    <td th:text="${b.machine.model}">Machine</td>
+                    <td>
+                        <span th:text="${b.machine.model}">Machine</span>
+                        <span class="pill" th:if="${b.partOfGroup}" title="Part of a multi-machine request">Group</span>
+                    </td>
                     <td>
                         <strong th:text="${b.jobSiteDistrict}">District</strong><br/>
                         <span class="muted" th:text="${b.jobSiteAddress}">Address</span>
@@ -51,14 +55,24 @@
                                 <button class="btn btn-danger btn-sm" type="submit">Reject</button>
                             </form>
                         </th:block>
-                        <form th:if="${cancellableUnpaid != null and cancellableUnpaid.contains(b.id)}"
+                        <a class="btn btn-ghost btn-sm"
+                           th:if="${replaceable != null and replaceable.contains(b.id)}"
+                           th:href="@{'/admin/bookings/' + ${b.id} + '/replace'}">Replace machine</a>
+
+                        <form th:if="${b.status.name() == 'APPROVED'}"
                               th:action="@{'/admin/bookings/' + ${b.id} + '/cancel'}" method="post"
-                              onsubmit="return confirm('Cancel this unpaid approved booking and free the dates?')">
-                            <button class="btn btn-danger btn-sm" type="submit">Cancel unpaid</button>
+                              th:attr="onsubmit=|return confirm('${cancellationNotes != null and cancellationNotes.containsKey(b.id) ? cancellationNotes.get(b.id) : ''} Cancel this booking?')|">
+                            <button class="btn btn-danger btn-sm" type="submit"
+                                    th:text="${cancellableUnpaid != null and cancellableUnpaid.contains(b.id)} ? 'Cancel unpaid' : 'Cancel &amp; refund'">Cancel</button>
                         </form>
+
+                        <a class="btn btn-primary btn-sm"
+                           th:if="${needsInspection != null and needsInspection.contains(b.id)}"
+                           th:href="@{'/admin/bookings/' + ${b.id} + '/inspection'}">File return inspection</a>
+
                         <span class="muted"
-                              th:if="${b.status.name() != 'PENDING'
-                                       and (cancellableUnpaid == null or !cancellableUnpaid.contains(b.id))}">&mdash;</span>
+                              th:if="${b.status.name() != 'PENDING' and b.status.name() != 'APPROVED'
+                                       and (needsInspection == null or !needsInspection.contains(b.id))}">&mdash;</span>
                     </td>
                 </tr>
                 </tbody>

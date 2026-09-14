@@ -1,5 +1,6 @@
 package com.dozernet.module1_customer.web;
 
+import com.dozernet.common.document.DocumentType;
 import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.security.CurrentUserService;
 import com.dozernet.common.user.User;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -52,7 +54,26 @@ public class CustomerController {
             model.addAttribute("profileForm", new ProfileForm(user.getFullName(), user.getPhone()));
         }
         model.addAttribute("user", user);
+        model.addAttribute("documents", customerService.documentsFor(user));
+        model.addAttribute("documentTypes", DocumentType.values());
         return "customer/profile";
+    }
+
+    /**
+     * Adds a document to the account (NIC copy, licence, ownership proof) so it
+     * can be reused rather than uploaded again for each registration.
+     */
+    @PostMapping("/documents")
+    public String uploadDocument(@RequestParam DocumentType type,
+                                 @RequestParam("file") MultipartFile file,
+                                 RedirectAttributes ra) {
+        try {
+            customerService.uploadDocument(currentUserService.require(), type, file);
+            ra.addFlashAttribute("success", type.getDisplayName() + " uploaded.");
+        } catch (BusinessRuleException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/customer/profile";
     }
 
     @PostMapping("/profile")

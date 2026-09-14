@@ -24,7 +24,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="inv : ${invoices}">
-                    <td th:text="${inv.id}">1</td>
+                    <td th:text="${inv.reference}">INV-2026-00001</td>
                     <td th:text="${inv.booking.machine.model}">Machine</td>
                     <td th:text="${inv.issuedDate}">date</td>
                     <td><span th:text="${currencySymbol}">Rs.</span>

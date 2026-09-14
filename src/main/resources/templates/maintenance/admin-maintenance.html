@@ -12,6 +12,35 @@
                 <p class="eyebrow">Admin &middot; Maintenance</p>
                 <h1>Maintenance &amp; service</h1>
             </div>
+            <form th:action="@{/admin/maintenance/remind}" method="post">
+                <button class="btn btn-ghost" type="submit">Send service reminders</button>
+            </form>
+        </div>
+
+        <!-- Machines past the service interval -->
+        <div class="card" style="margin-bottom:var(--space-5)" th:unless="${#lists.isEmpty(dueForService)}">
+            <h3 style="margin-top:0">
+                Due for service
+                <span class="pill pill-maintenance" th:text="${#lists.size(dueForService)}">0</span>
+            </h3>
+            <p class="muted">
+                Nothing serviced in the last <span th:text="${serviceIntervalMonths}">3</span> months,
+                and no service already booked in.
+            </p>
+            <div class="table-wrap">
+                <table class="data">
+                    <thead><tr><th>Machine</th><th>Registration</th><th>Why</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="d : ${dueForService}">
+                        <td th:text="${d.machine.model}">Machine</td>
+                        <td th:text="${d.machine.registrationNumber}">REG</td>
+                        <td th:text="${d.reason}">Last serviced ...</td>
+                        <td><a class="btn btn-ghost btn-sm"
+                               th:href="@{'/admin/maintenance/history/' + ${d.machine.id}}">History</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="grid grid-2" style="align-items:start">

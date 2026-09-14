@@ -63,6 +63,40 @@
                 </div>
             </div>
         </div>
+
+        <!-- Detailed reports, each downloadable as CSV or PDF -->
+        <div th:each="table : ${tables}" class="card" style="margin-top:var(--space-5)">
+            <div class="page-head" style="margin-bottom:var(--space-3)">
+                <div>
+                    <h3 style="margin:0" th:text="${table.title}">Report</h3>
+                    <p class="muted" style="margin:.2rem 0 0" th:text="${table.subtitle}">What it covers</p>
+                </div>
+                <div style="display:flex;gap:.4rem">
+                    <a class="btn btn-ghost btn-sm" th:href="@{'/admin/reports/' + ${table.key} + '.csv'}">CSV</a>
+                    <a class="btn btn-ghost btn-sm" th:href="@{'/admin/reports/' + ${table.key} + '.pdf'}">PDF</a>
+                </div>
+            </div>
+
+            <p class="muted" th:if="${table.empty}">No data for this report yet.</p>
+
+            <div class="table-wrap" th:unless="${table.empty}">
+                <table class="data">
+                    <thead>
+                    <tr><th th:each="col : ${table.columns}" th:text="${col}">Column</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${table.rows}">
+                        <td th:each="cell : ${row}" th:text="${cell}">value</td>
+                    </tr>
+                    </tbody>
+                    <tfoot th:if="${table.hasTotals()}">
+                    <tr>
+                        <th th:each="cell : ${table.totals}" th:text="${cell}">total</th>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
     </div>
 </section>
 

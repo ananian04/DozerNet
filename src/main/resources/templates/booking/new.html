@@ -56,7 +56,23 @@
                 <div class="field-error" th:if="${#fields.hasErrors('jobSiteAddress')}" th:errors="*{jobSiteAddress}"></div>
             </div>
 
+            <!-- One job often needs several machines; each gets its own booking and invoice. -->
+            <div class="field" th:unless="${#lists.isEmpty(otherMachines)}">
+                <label for="alsoMachineIds">Need anything else for the same job? (optional)</label>
+                <p class="muted" style="margin:.25rem 0 var(--space-2)">
+                    Hold Ctrl (Cmd on Mac) to pick more than one. They share these dates and job site.
+                </p>
+                <select class="select" id="alsoMachineIds" name="alsoMachineIds" multiple size="5">
+                    <option th:each="m : ${otherMachines}" th:value="${m.id}"
+                            th:text="${m.model} + ' (' + ${m.type.displayName} + ') — ' + ${currencySymbol} + ' '
+                                     + ${#numbers.formatDecimal(m.dailyRate,1,'COMMA',2,'POINT')} + '/day'">Machine</option>
+                </select>
+            </div>
+
             <p class="muted" id="estimate" style="display:none">Estimated total: <strong id="estimateValue"></strong></p>
+            <p class="muted">
+                Transport to the job site and 18% VAT are added to your invoice once the booking is approved.
+            </p>
             <button class="btn btn-primary" type="submit">Request booking</button>
         </form>
     </div>

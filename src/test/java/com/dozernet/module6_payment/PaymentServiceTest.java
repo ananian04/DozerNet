@@ -1,5 +1,6 @@
 package com.dozernet.module6_payment;
 
+import com.dozernet.common.audit.AuditService;
 import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.model.Role;
 import com.dozernet.common.notification.NotificationService;
@@ -13,9 +14,11 @@ import com.dozernet.module6_payment.entity.Invoice;
 import com.dozernet.module6_payment.entity.InvoiceStatus;
 import com.dozernet.module6_payment.entity.Payment;
 import com.dozernet.module6_payment.entity.PaymentMethod;
+import com.dozernet.module6_payment.pricing.PricingBreakdown;
 import com.dozernet.module6_payment.pricing.PricingSelector;
 import com.dozernet.module6_payment.repository.InvoiceRepository;
 import com.dozernet.module6_payment.repository.PaymentRepository;
+import com.dozernet.module6_payment.service.CardPaymentRequest;
 import com.dozernet.module6_payment.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +49,7 @@ class PaymentServiceTest {
     @Mock PricingSelector pricingSelector;
     @Mock NotificationService notificationService;
     @Mock com.dozernet.common.user.UserRepository userRepository;
+    @Mock AuditService auditService;
 
     @InjectMocks PaymentService paymentService;
 
@@ -79,6 +83,19 @@ class PaymentServiceTest {
         completedBooking.setTotalAmount(new BigDecimal("30000.00"));
     }
 
+    /** Hire 30,000 + transport 2,000 + 18% VAT 5,760 = 37,760 payable. */
+    private void stubPricing(Booking booking) {
+        when(pricingSelector.priceBreakdown(booking)).thenReturn(new PricingBreakdown(
+                new BigDecimal("30000.00"), new BigDecimal("2000.00"), new BigDecimal("5760.00"),
+                new BigDecimal("37760.00"), BigDecimal.ZERO, "Standard"));
+    }
+
+    /** A valid demo card: passes the Luhn check and has not expired. */
+    private static CardPaymentRequest validCard() {
+        return new CardPaymentRequest("Chamara Perera", "4242424242424242",
+                "12/" + String.valueOf(LocalDate.now().plusYears(2).getYear()).substring(2), "123");
+    }
+
     @Test
     void cannotInvoicePendingBooking() {
         approvedBooking.setStatus(BookingStatus.PENDING);
@@ -102,7 +119,7 @@ class PaymentServiceTest {
     @Test
     void createsInvoiceForApprovedBooking() {
         when(invoiceRepository.existsByBooking(approvedBooking)).thenReturn(false);
-        when(pricingSelector.price(approvedBooking)).thenReturn(new BigDecimal("30000.00"));
+        stubPricing(approvedBooking);
         when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
             Invoice i = inv.getArgument(0);
             i.setId(99L);
@@ -111,8 +128,12 @@ class PaymentServiceTest {
 
         Invoice invoice = paymentService.createInvoiceForApprovedBooking(approvedBooking);
 
-        assertThat(invoice.getAmount()).isEqualByComparingTo("30000.00");
+        assertThat(invoice.getBaseAmount()).isEqualByComparingTo("30000.00");
+        assertThat(invoice.getTransportSurcharge()).isEqualByComparingTo("2000.00");
+        assertThat(invoice.getVatAmount()).isEqualByComparingTo("5760.00");
+        assertThat(invoice.getAmount()).isEqualByComparingTo("37760.00");
         assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
+        // The booking snapshot keeps the hire charge, without haulage or VAT.
         assertThat(approvedBooking.getTotalAmount()).isEqualByComparingTo("30000.00");
     }
 
@@ -120,12 +141,12 @@ class PaymentServiceTest {
     void generatesInvoiceUsingPricingStrategy() {
         when(bookingService.getById(6L)).thenReturn(completedBooking);
         when(invoiceRepository.existsByBooking(completedBooking)).thenReturn(false);
-        when(pricingSelector.price(completedBooking)).thenReturn(new BigDecimal("30000.00"));
+        stubPricing(completedBooking);
         when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Invoice invoice = paymentService.generateInvoice(6L);
 
-        assertThat(invoice.getAmount()).isEqualByComparingTo("30000.00");
+        assertThat(invoice.getAmount()).isEqualByComparingTo("37760.00");
         assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
         assertThat(invoice.getCustomer()).isEqualTo(customer);
     }
@@ -189,16 +210,119 @@ class PaymentServiceTest {
         Invoice invoice = new Invoice(approvedBooking, customer, new BigDecimal("30000.00"));
         invoice.setId(9L);
         when(invoiceRepository.findByIdWithDetails(9L)).thenReturn(Optional.of(invoice));
-        when(invoiceRepository.findById(9L)).thenReturn(Optional.of(invoice));
         when(paymentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userRepository.findByRole(Role.ADMIN)).thenReturn(List.of());
 
-        Payment payment = paymentService.recordCustomerPayment(9L, customer, "Chamara Perera", "4242");
+        Payment payment = paymentService.recordCustomerPayment(9L, customer, validCard(), null);
 
         assertThat(payment.getMethod()).isEqualTo(PaymentMethod.CARD);
         assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
         assertThat(payment.getReference()).contains("4242");
+    }
+
+    @Test
+    void customerPortalRecordsPartPaymentAndLeavesBalance() {
+        Invoice invoice = new Invoice(approvedBooking, customer, new BigDecimal("30000.00"));
+        invoice.setId(9L);
+        when(invoiceRepository.findByIdWithDetails(9L)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Payment payment = paymentService.recordCustomerPayment(
+                9L, customer, validCard(), new BigDecimal("10000.00"));
+
+        assertThat(payment.getAmount()).isEqualByComparingTo("10000.00");
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PARTIALLY_PAID);
+        assertThat(invoice.getBalance()).isEqualByComparingTo("20000.00");
+        // The customer is chased for what is still owed.
+        verify(notificationService).notify(eq(customer), eq("Balance still due"), anyString());
+    }
+
+    @Test
+    void rejectsCardThatFailsTheLuhnCheck() {
+        Invoice invoice = new Invoice(approvedBooking, customer, new BigDecimal("30000.00"));
+        invoice.setId(9L);
+        when(invoiceRepository.findByIdWithDetails(9L)).thenReturn(Optional.of(invoice));
+
+        CardPaymentRequest bad = new CardPaymentRequest("Chamara Perera", "1234567812345678", "12/30", "123");
+
+        assertThatThrownBy(() -> paymentService.recordCustomerPayment(9L, customer, bad, null))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("not valid");
+    }
+
+    @Test
+    void rejectsExpiredCard() {
+        Invoice invoice = new Invoice(approvedBooking, customer, new BigDecimal("30000.00"));
+        invoice.setId(9L);
+        when(invoiceRepository.findByIdWithDetails(9L)).thenReturn(Optional.of(invoice));
+
+        CardPaymentRequest expired = new CardPaymentRequest("Chamara Perera", "4242424242424242", "01/20", "123");
+
+        assertThatThrownBy(() -> paymentService.recordCustomerPayment(9L, customer, expired, null))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("expired");
+    }
+
+    @Test
+    void rejectsCvvThatIsNotThreeDigits() {
+        Invoice invoice = new Invoice(approvedBooking, customer, new BigDecimal("30000.00"));
+        invoice.setId(9L);
+        when(invoiceRepository.findByIdWithDetails(9L)).thenReturn(Optional.of(invoice));
+
+        CardPaymentRequest shortCvv = new CardPaymentRequest("Chamara Perera", "4242424242424242", "12/30", "12");
+
+        assertThatThrownBy(() -> paymentService.recordCustomerPayment(9L, customer, shortCvv, null))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("CVV must be 3 digits");
+    }
+
+    @Test
+    void numbersInvoicesInSequenceForTheYear() {
+        when(invoiceRepository.existsByBooking(approvedBooking)).thenReturn(false);
+        stubPricing(approvedBooking);
+        when(invoiceRepository.countIssuedInYear(anyString())).thenReturn(41L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Invoice invoice = paymentService.createInvoiceForApprovedBooking(approvedBooking);
+
+        assertThat(invoice.getInvoiceNumber())
+                .isEqualTo("INV-" + java.time.Year.now().getValue() + "-00042");
+    }
+
+    @Test
+    void refundsInFullWhenPolicyAllowsIt() {
+        Invoice invoice = new Invoice(approvedBooking, customer, new BigDecimal("30000.00"));
+        invoice.setId(9L);
+        invoice.setAmountPaid(new BigDecimal("30000.00"));
+        invoice.setStatus(InvoiceStatus.PAID);
+        when(invoiceRepository.findByBooking(approvedBooking)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        BigDecimal refunded = paymentService.refundForCancellation(approvedBooking, BigDecimal.ONE);
+
+        assertThat(refunded).isEqualByComparingTo("30000.00");
+        assertThat(invoice.getAmountPaid()).isEqualByComparingTo("0.00");
+        assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.CANCELLED);
+    }
+
+    @Test
+    void keepsTheCancellationChargeOnALateRefund() {
+        Invoice invoice = new Invoice(approvedBooking, customer, new BigDecimal("30000.00"));
+        invoice.setId(9L);
+        invoice.setAmountPaid(new BigDecimal("30000.00"));
+        invoice.setStatus(InvoiceStatus.PAID);
+        when(invoiceRepository.findByBooking(approvedBooking)).thenReturn(Optional.of(invoice));
+        when(paymentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // 20% cancellation charge -> 80% comes back.
+        BigDecimal refunded = paymentService.refundForCancellation(approvedBooking, new BigDecimal("0.80"));
+
+        assertThat(refunded).isEqualByComparingTo("24000.00");
+        assertThat(invoice.getAmountPaid()).isEqualByComparingTo("6000.00");
     }
 
     @Test

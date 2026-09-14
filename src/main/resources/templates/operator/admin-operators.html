@@ -35,6 +35,12 @@
                                 <span class="pill pill-pending" th:unless="${o.verified}">Pending</span>
                             </td>
                             <td>
+                                <th:block th:if="${operatorDocuments != null and operatorDocuments.get(o.id) != null}">
+                                    <a th:each="doc : ${operatorDocuments.get(o.id)}"
+                                       class="btn btn-ghost btn-sm" style="margin:0 .2rem .2rem 0"
+                                       th:href="@{'/documents/' + ${doc.id}}" target="_blank"
+                                       th:text="${doc.type.displayName}">Document</a>
+                                </th:block>
                                 <form th:unless="${o.verified}" th:action="@{'/admin/operators/' + ${o.id} + '/verify'}" method="post">
                                     <button class="btn btn-primary btn-sm" type="submit">Verify</button>
                                 </form>

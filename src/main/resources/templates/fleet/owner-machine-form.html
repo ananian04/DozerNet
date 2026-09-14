@@ -11,7 +11,7 @@
 
         <form class="card"
               th:action="${mode == 'edit'} ? @{'/owner/machines/' + ${machineId} + '/edit'} : @{/owner/machines/new}"
-              th:object="${machineForm}" method="post" novalidate>
+              th:object="${machineForm}" method="post" enctype="multipart/form-data" novalidate>
             <div class="field">
                 <label for="model">Model / name</label>
                 <input class="input" id="model" type="text" th:field="*{model}" placeholder="JCB 3CX Backhoe Loader"/>
@@ -44,9 +44,17 @@
                 </div>
             </div>
             <div class="field">
-                <label for="imageUrl">Image URL (optional)</label>
+                <label for="imageUrl">Photo URL</label>
                 <input class="input" id="imageUrl" type="text" th:field="*{imageUrl}" placeholder="https://..."/>
                 <div class="field-error" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}"></div>
+            </div>
+            <div class="field">
+                <label for="ownershipProof">Ownership proof (optional)</label>
+                <input class="input" id="ownershipProof" type="file" name="ownershipProof"
+                       accept="image/jpeg,image/png,image/webp,application/pdf"/>
+                <p class="muted" style="margin:.35rem 0 0">
+                    Registration book or similar. The admin checks this before your listing goes live.
+                </p>
             </div>
             <div class="field">
                 <label for="description">Description (optional)</label>

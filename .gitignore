@@ -31,3 +31,6 @@ docs/spec/
 
 # Accidental IDE Simple Browser path artifacts
 vscode:/
+
+# Uploaded documents (NIC / licence / ownership proof / inspection photos)
+uploads/

@@ -10,7 +10,7 @@
         <h1 style="font-size:1.8rem">Join as an operator</h1>
         <p class="muted">Register to get assigned to jobs. An admin will verify your licence before you can be assigned.</p>
 
-        <form th:action="@{/register/driver}" th:object="${driverForm}" method="post" novalidate>
+        <form th:action="@{/register/driver}" th:object="${driverForm}" method="post" enctype="multipart/form-data" novalidate>
             <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
                 <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">error</div>
             </div>
@@ -62,6 +62,21 @@
                     <div class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
                 </div>
             </div>
+            <div class="form-row">
+                <div class="field">
+                    <label for="licenceCopy">Driving licence copy (optional)</label>
+                    <input class="input" id="licenceCopy" type="file" name="licenceCopy"
+                           accept="image/jpeg,image/png,image/webp,application/pdf"/>
+                </div>
+                <div class="field">
+                    <label for="nicCopy">NIC copy (optional)</label>
+                    <input class="input" id="nicCopy" type="file" name="nicCopy"
+                           accept="image/jpeg,image/png,image/webp,application/pdf"/>
+                </div>
+            </div>
+            <p class="muted" style="margin:0 0 var(--space-2)">
+                An admin verifies your licence against these documents before you can be assigned jobs.
+            </p>
             <button class="btn btn-primary btn-block" type="submit">Register as driver</button>
         </form>
         <p class="muted" style="margin-top:var(--space-3);text-align:center">

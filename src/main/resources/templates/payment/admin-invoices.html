@@ -12,10 +12,16 @@
                 <p class="eyebrow">Admin &middot; Payment</p>
                 <h1>Invoices</h1>
             </div>
-            <form th:action="@{/admin/invoices/generate-all}" method="post"
-                  th:if="${pendingInvoices != null and !#lists.isEmpty(pendingInvoices)}">
-                <button class="btn btn-primary" type="submit">Generate all pending</button>
-            </form>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                <form th:action="@{/admin/invoices/remind}" method="post">
+                    <button class="btn btn-ghost" type="submit"
+                            title="Notify every customer who still owes money">Send balance reminders</button>
+                </form>
+                <form th:action="@{/admin/invoices/generate-all}" method="post"
+                      th:if="${pendingInvoices != null and !#lists.isEmpty(pendingInvoices)}">
+                    <button class="btn btn-primary" type="submit">Generate all pending</button>
+                </form>
+            </div>
         </div>
 
         <div class="card" style="margin-bottom:var(--space-5)"
@@ -54,7 +60,7 @@
                 </thead>
                 <tbody>
                 <tr th:each="inv : ${invoices}">
-                    <td th:text="${inv.id}">1</td>
+                    <td th:text="${inv.reference}">INV-2026-00001</td>
                     <td th:text="${inv.customer.fullName}">Customer</td>
                     <td th:text="${inv.booking.machine.model}">Machine</td>
                     <td th:text="${inv.issuedDate}">2026-01-01</td>
