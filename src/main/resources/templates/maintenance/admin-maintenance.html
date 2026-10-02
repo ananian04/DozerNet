@@ -51,7 +51,7 @@
                     <div class="field">
                         <label for="machineId">Machine</label>
                         <select class="select" id="machineId" th:field="*{machineId}">
-                            <option value="" disabled selected>Select a machine</option>
+                            <option value="">Select a machine</option>
                             <option th:each="m : ${machines}" th:value="${m.id}"
                                     th:text="${m.model} + ' (' + ${m.registrationNumber} + ')'"></option>
                         </select>

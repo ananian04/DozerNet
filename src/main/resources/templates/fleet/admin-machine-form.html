@@ -44,12 +44,14 @@
                 </div>
             </div>
             <div class="field">
-                <label for="imageUrl">Image URL (optional)</label>
-                <input class="input" id="imageUrl" type="text" th:field="*{imageUrl}" placeholder="https://..."/>
+                <label for="imageUrl">Photo URL</label>
+                <input class="input" id="imageUrl" type="text" th:field="*{imageUrl}" placeholder="https://... or /images/machines/excavator.jpg"/>
+                <div class="field-error" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}"></div>
             </div>
             <div class="field">
                 <label for="description">Description (optional)</label>
                 <textarea class="textarea" id="description" rows="3" th:field="*{description}"></textarea>
+                <div class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
             </div>
             <button class="btn btn-primary" type="submit" th:text="${mode == 'edit'} ? 'Save changes' : 'Add machine'">Save</button>
         </form>
