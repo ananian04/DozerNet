@@ -5,9 +5,14 @@ import com.dozernet.common.exception.BusinessRuleException;
 import com.dozernet.common.security.CurrentUserService;
 import com.dozernet.common.user.User;
 import com.dozernet.module1_customer.dto.ProfileForm;
+import com.dozernet.module1_customer.service.AccountDeletionService;
 import com.dozernet.module1_customer.service.CustomerService;
 import com.dozernet.module6_payment.service.PaymentService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -28,13 +33,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final AccountDeletionService accountDeletionService;
     private final CurrentUserService currentUserService;
     private final PaymentService paymentService;
 
     public CustomerController(CustomerService customerService,
+                              AccountDeletionService accountDeletionService,
                               CurrentUserService currentUserService,
                               PaymentService paymentService) {
         this.customerService = customerService;
+        this.accountDeletionService = accountDeletionService;
         this.currentUserService = currentUserService;
         this.paymentService = paymentService;
     }
@@ -56,6 +64,7 @@ public class CustomerController {
         model.addAttribute("user", user);
         model.addAttribute("documents", customerService.documentsFor(user));
         model.addAttribute("documentTypes", DocumentType.values());
+        model.addAttribute("deletionCheck", accountDeletionService.check(user));
         return "customer/profile";
     }
 
@@ -84,6 +93,9 @@ public class CustomerController {
         User user = currentUserService.require();
         if (binding.hasErrors()) {
             model.addAttribute("user", user);
+            model.addAttribute("documents", customerService.documentsFor(user));
+            model.addAttribute("documentTypes", DocumentType.values());
+            model.addAttribute("deletionCheck", accountDeletionService.check(user));
             return "customer/profile";
         }
         try {
@@ -108,5 +120,26 @@ public class CustomerController {
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/customer/profile";
+    }
+
+    /**
+     * Deletes the signed-in customer's own account. Refused (with an explanation)
+     * while bookings or invoices are still open. On success the session is ended.
+     */
+    @PostMapping("/account/delete")
+    public String deleteAccount(@RequestParam(required = false) String password,
+                                @RequestParam(defaultValue = "false") boolean confirm,
+                                HttpServletRequest request,
+                                HttpServletResponse response,
+                                RedirectAttributes ra) {
+        try {
+            accountDeletionService.deleteOwnAccount(currentUserService.require(), password, confirm);
+        } catch (BusinessRuleException ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/customer/profile";
+        }
+        new SecurityContextLogoutHandler().logout(request, response,
+                SecurityContextHolder.getContext().getAuthentication());
+        return "redirect:/login?deleted";
     }
 }
