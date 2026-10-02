@@ -12,7 +12,10 @@
                 <p class="eyebrow">Admin &middot; Accounts</p>
                 <h1>User management</h1>
             </div>
-            <a class="btn btn-ghost" th:href="@{/admin/dashboard}">Dashboard</a>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+                <a class="btn btn-ghost" th:href="@{/admin/dashboard}">Dashboard</a>
+                <a class="btn btn-primary" th:href="@{/admin/users/new}">Add staff admin</a>
+            </div>
         </div>
 
         <div class="table-wrap">
@@ -32,7 +35,9 @@
                         <span class="pill pill-rejected" th:unless="${u.enabled}">Disabled</span>
                     </td>
                     <td>
-                        <form th:action="@{'/admin/users/' + ${u.id} + '/toggle'}" method="post">
+                        <span class="muted" th:if="${currentUser != null and currentUser.id == u.id}">You</span>
+                        <form th:unless="${currentUser != null and currentUser.id == u.id}"
+                              th:action="@{'/admin/users/' + ${u.id} + '/toggle'}" method="post">
                             <button class="btn btn-sm"
                                     th:classappend="${u.enabled} ? 'btn-danger' : 'btn-primary'"
                                     type="submit"
