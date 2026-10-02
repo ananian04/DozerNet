@@ -13,7 +13,7 @@ SE2030 Software Engineering group project — Group **MLB-B4G2-09**.
 | Language   | Java 21                                                 |
 | Framework  | Spring Boot 3 (MVC, Data JPA, Security, Validation)     |
 | Views      | Thymeleaf + a custom CSS design system (Apple-inspired) |
-| Landing 3D | Three.js hero (JCB model / procedural fallback)         |
+| Landing    | Hand-built hero: live fleet showcase + job-category panel |
 | Database   | MySQL (via MySQL Workbench); H2 in-memory for dev/tests |
 | Build      | Maven                                                   |
 | Auth       | BCrypt password hashing + role-based access control     |
