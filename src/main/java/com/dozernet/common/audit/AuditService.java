@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 /**
  * Writes the administrative audit trail. Every module calls
@@ -44,10 +43,6 @@ public class AuditService {
 
     public Page<AuditLog> recent(int page, int size) {
         return auditLogRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(page, size));
-    }
-
-    public List<AuditLog> forEntity(String entityType, Long entityId) {
-        return auditLogRepository.findByEntityTypeAndEntityIdOrderByCreatedAtDesc(entityType, entityId);
     }
 
     private static String truncate(String details) {

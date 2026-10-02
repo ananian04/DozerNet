@@ -144,13 +144,6 @@ public class BookingService {
         return created;
     }
 
-    public List<Booking> findGroup(String bookingGroupId) {
-        if (bookingGroupId == null || bookingGroupId.isBlank()) {
-            return List.of();
-        }
-        return bookingRepository.findByBookingGroupId(bookingGroupId);
-    }
-
     public void validateJobSite(String district, String address) {
         if (district == null || district.isBlank()) {
             throw new BusinessRuleException("Select the district where the machine will work.");
@@ -206,16 +199,6 @@ public class BookingService {
         }
         cancelInternal(b, "Your approved booking for " + b.getMachine().getModel()
                 + " was cancelled by the administrator.");
-    }
-
-    /**
-     * @deprecated superseded by {@link #cancelApproved(Long)}, which also handles
-     *             paid bookings. Kept so existing links keep working.
-     */
-    @Deprecated
-    @Transactional
-    public void cancelUnpaidApproved(Long bookingId) {
-        cancelApproved(bookingId);
     }
 
     private void cancelInternal(Booking b, String customerMessage) {

@@ -52,16 +52,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     boolean existsByMachine(Machine machine);
 
-    /** All bookings created by one multi-machine request. */
-    @Query("""
-            select b from Booking b
-            join fetch b.machine
-            join fetch b.customer
-            where b.bookingGroupId = :groupId
-            order by b.id asc
-            """)
-    List<Booking> findByBookingGroupId(@Param("groupId") String groupId);
-
     /** Bookings overlapping a date range, whatever the machine - used by reports. */
     @Query("""
             select b from Booking b

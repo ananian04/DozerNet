@@ -22,8 +22,4 @@ public enum BookingStatus {
         return displayName;
     }
 
-    /** Statuses that occupy a machine's calendar (used for overlap checks). */
-    public boolean blocksCalendar() {
-        return this == PENDING || this == APPROVED;
-    }
 }
